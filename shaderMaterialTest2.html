@@ -1,0 +1,253 @@
+<html>
+<head>
+	<title>Wrapping Paper</title>
+	<script src="js/third_party/three.min.js"></script>
+	<script src="js/third_party/jquery-2.1.1.min.js"></script>
+	<script src="js/third_party/stats.min.js"></script>
+	<script src="js/third_party/dat.gui.min.js"></script>
+	<link rel="stylesheet" href="css/style.css">
+	<script id="vertex-shader" type="x-shader/x-vertex">
+		void main() {
+  			gl_Position = projectionMatrix *
+            modelViewMatrix *
+            vec4(position,1.0);
+		}
+
+	</script>
+	<script id="fragment-shader" type="x-shader/x-fragment">
+		#define WHITE vec4(1.0, 1.0, 1.0, 1.0)
+
+		uniform float time, speed, lineWidth;
+
+		void main() {
+			//diagonal bands
+			vec2 position = vec2(gl_FragCoord.x, gl_FragCoord.y);
+ 			 position.y += time * speed;
+			float remainder = floor(position.y/lineWidth);
+
+			if(mod(remainder, 2.0) == 0.0){
+			gl_FragColor = WHITE;
+			}else{
+			discard;
+			}
+		}
+	
+	</script>
+</head>
+<body>
+	<div id="Stats-output"></div>
+	<div id="WebGL-output"></div>
+	<script>
+		//generate color ramp
+		function componentToHex(c) {
+		    var hex = c.toString(16);
+		    return hex.length == 1 ? "0" + hex : hex;
+		}
+
+		function rgbToHex(r, g, b) {
+		    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+		}
+
+		//array, int
+		function generateColorRamp(colors, steps){
+			colors.push(colors[0]);
+
+			var colorIntervals = [],
+			i, j,
+			deltaR,
+			deltaG,
+			deltaB,
+			intervalSteps = steps / colors.length,
+			currentColorIndex,
+			nextColorIndex;
+
+			for(i = 0; i < colors.length; i++){	
+				if(i === colors.length - 1){
+					currentColorIndex = i - 1;
+					nextColorIndex = 0;
+				}else{
+					currentColorIndex = i;
+					nextColorIndex = i + 1;
+				}
+				deltaR = (colors[nextColorIndex][0] - colors[currentColorIndex][0]) / intervalSteps;
+				deltaG = (colors[nextColorIndex][1] - colors[currentColorIndex][1]) / intervalSteps;
+				deltaB = (colors[nextColorIndex][2] - colors[currentColorIndex][2]) / intervalSteps;
+
+				for(j = 0; j < intervalSteps; j++){
+					var newColor = [
+						Math.abs(parseInt(colors[i][0] + deltaR * j, 10)),
+						Math.abs(parseInt(colors[i][1] + deltaG * j, 10)),
+						Math.abs(parseInt(colors[i][2] + deltaB * j, 10)),
+					];
+
+					colorIntervals.push(newColor);
+				}
+			}
+
+			return colorIntervals;
+		}
+
+		var RED = [255, 0, 0],
+			GOLD = [255,215,0],
+			SILVER = [192, 192, 192],
+			//total steps in ramp from red -> gold -> silver -> red
+			STEPS = 800,
+			
+			colorIntervals = generateColorRamp([RED, GOLD, SILVER], STEPS);
+
+			//hex color values
+			colorIntervals.forEach(function(colorValue, index, array){
+				colorIntervals[index] = rgbToHex(colorValue[0], colorValue[1], colorValue[2]);
+			});
+
+		//end color generation
+
+		var millis = (function(){
+			var startTime = new Date().getTime();
+
+			return function(){
+				return new Date().getTime() - startTime;
+			}
+		}());
+
+		// GUI
+		var controls = new function(){
+			this.lineWidth = 50,
+			this.speed = 0.20,
+			this.colorCyclingSpeed = 0.05
+		};
+
+		var gui = new dat.GUI();
+		gui.add(controls, 'lineWidth', 50, 500);
+		gui.add(controls, 'speed', 0.2, 10);
+		gui.add(controls, 'colorCyclingSpeed', 0.05, 1.0);
+		// END GUI
+
+		function initStats(){
+			var stats = new Stats();
+			stats.setMode(0);
+			stats.domElement.style.position = 'absolute',
+			stats.domElement.style.left = '0px';
+			stats.domElement.style.top = '0px';
+			$('#Stats-output').append(stats.domElement);
+			return stats;
+		}
+
+		var rows = 8,
+			columns = 8,
+			planeWidth = window.innerWidth / 2,
+			planeHeight = window.innerHeight / 2,
+			planes = [];
+
+		$(function(){
+			var stats = initStats();
+			var scene = new THREE.Scene();
+
+			//frame buffer object
+			var fboScene = new THREE.Scene();
+			var fboTexture = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat } );
+			var quadGeometry = new THREE.PlaneGeometry( window.innerWidth, window.innerHeight, 1, 1 );
+			var quadMaterial = new THREE.ShaderMaterial({
+				uniforms: {
+					time: { 
+						type: 'f', 
+						value: millis()
+					},
+					speed: {
+						type: 'f',
+						value: controls.speed
+					}, 
+					lineWidth: {
+						type: 'f',
+						value: controls.lineWidth
+					}
+				},
+				vertexShader: $('#vertex-shader').text(),
+				fragmentShader: $('#fragment-shader').text()
+			});
+			var quad = new THREE.Mesh(quadGeometry, quadMaterial);
+			fboScene.add(quad);
+
+			var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 1, 1000 );
+			fboScene.add(camera);
+
+			camera.position.x = 0;
+			camera.position.y =	0;
+			camera.position.z = 100;
+			camera.lookAt(fboScene.position);
+
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+
+			var planeGeometry = new THREE.PlaneGeometry(planeWidth, planeHeight, 1, 1);
+			var planeMaterial = new THREE.MeshBasicMaterial({
+				map: fboTexture
+			});			
+
+			// object {x, y, z}, direction (true, false), count, rotation
+			function generateRotatedSet(position, direction, count, rotation){
+				function setupPlane(index){
+					var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+
+					plane.position.x = position.x;
+					plane.position.y = position.y;
+					plane.position.z = index;
+
+					//var upperCorner = new THREE.Vector3(plane.geometry.vertices[0].x, plane.geometry.vertices[0].y, plane.geometry.vertices[0].z);
+					//plane.applyMatrix(new THREE.Matrix4().makeRotationAxis(upperCorner, i));
+					//plane.applyMatrix( new THREE.Matrix4().makeTranslation(plane.geometry.vertices[0].x, plane.geometry.vertices[0].y, plane.geometry.vertices[0].z));
+					plane.rotation.z = i * rotation;
+					
+					planes.push(plane);
+					scene.add(plane);
+				}
+
+				if(direction){
+					for(var i = count; i > 0; i--){
+						setupPlane(i);
+					}
+				}else{
+					for(var i = 0; i < count; i++){
+						setupPlane(i);
+					}
+				}
+				
+			}
+
+			generateRotatedSet({x: 0, y: 0, z: 0}, false, 4, 5);
+			generateRotatedSet({x: -window.innerWidth/2, y: 0, z: 0}, true, 8, 5);
+			generateRotatedSet({x: window.innerWidth/4, y: -window.innerHeight/4, z: 0}, true, 4, 5);
+			generateRotatedSet({x: -window.innerWidth/4, y: -window.innerHeight/2, z: 0}, false, 4, 15);
+			generateRotatedSet({x: window.innerWidth/8, y: window.innerHeight/2, z: 0}, true, 4, 15);
+			generateRotatedSet({x: -window.innerWidth/4, y: window.innerHeight/2, z: 0}, false, 4, 10);
+			generateRotatedSet({x: -window.innerWidth/4, y: window.innerHeight/2, z: 0}, true, 4, 10);
+			generateRotatedSet({x: window.innerWidth/2, y: window.innerHeight/4, z: 0}, false, 6, 20);
+			generateRotatedSet({x: window.innerWidth/4, y: -window.innerHeight/2, z: 0}, false, 8, 20);
+			
+
+			//lower left
+
+			//middle right
+
+		
+			$('#WebGL-output').append(renderer.domElement);
+			renderScene();
+
+			function renderScene(){
+				stats.update();
+				var time = millis();
+				requestAnimationFrame(renderScene);
+
+				renderer.setClearColor(colorIntervals[parseInt(time * controls.colorCyclingSpeed) % STEPS]);
+
+				quadMaterial.uniforms.time.value = time;
+				quadMaterial.uniforms.speed.value = controls.speed;
+				quadMaterial.uniforms.lineWidth.value = controls.lineWidth;
+				
+				renderer.render(fboScene, camera, fboTexture, true);
+				renderer.render(scene, camera);
+			}
+		});
+	</script>
+</body>
+</html>

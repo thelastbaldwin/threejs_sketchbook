@@ -1,0 +1,15 @@
+#all node dependencies
+#node_modules/
+
+#ignore images
+*.gif
+*.jpg
+*.jpeg
+*.png
+*.tiff
+
+#OSX
+.DS_Store
+
+#ignore js dependencies
+js/third_party/

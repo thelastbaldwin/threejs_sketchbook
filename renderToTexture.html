@@ -1,0 +1,172 @@
+<html>
+<head>
+	<title>Wrapping Paper</title>
+	<script src="js/third_party/three.min.js"></script>
+	<script src="js/third_party/jquery-2.1.1.min.js"></script>
+	<script src="js/third_party/stats.min.js"></script>
+	<script src="js/third_party/dat.gui.min.js"></script>
+	<link rel="stylesheet" href="css/style.css">
+	<script id="vertex-shader" type="x-shader/x-vertex">
+		void main() {
+  			gl_Position = projectionMatrix *
+            modelViewMatrix *
+            vec4(position,1.0);
+		}
+
+	</script>
+	<script id="fragment-shader" type="x-shader/x-fragment">
+		#define WHITE vec4(1.0, 1.0, 1.0, 1.0)
+
+		uniform float time, speed, lineWidth;
+
+		void main() {
+			//diagonal bands
+			vec2 position = vec2(gl_FragCoord.x, gl_FragCoord.y);
+ 			 position.x += time * speed;
+			float remainder = floor((position.x + position.y)/lineWidth);
+
+			if(mod(remainder, 2.0) == 0.0){
+			gl_FragColor = WHITE;
+			}else{
+			discard;
+			}
+
+			//outputting blue as a test
+			//gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+		}
+	
+	</script>
+</head>
+<body>
+	<div id="Stats-output"></div>
+	<div id="WebGL-output"></div>
+	<script>
+		var millis = (function(){
+			var startTime = new Date().getTime();
+
+			return function(){
+				return new Date().getTime() - startTime;
+			}
+		}());
+
+		var controls = new function(){
+			this.lineWidth = 500,
+			this.speed = 0.20
+		}
+
+		var gui = new dat.GUI();
+		gui.add(controls, 'lineWidth', 100, 500);
+		gui.add(controls, 'speed', 0.2, 10);
+
+		function initStats(){
+			var stats = new Stats();
+			stats.setMode(0);
+			stats.domElement.style.position = 'absolute',
+			stats.domElement.style.left = '0px';
+			stats.domElement.style.top = '0px';
+			$('#Stats-output').append(stats.domElement);
+			return stats;
+		}
+
+		var rows = 24,
+			columns = 24,
+			planeWidth = window.innerWidth / rows,
+			planeHeight = window.innerHeight / columns,
+			padding = planeWidth * 0.50,
+			planes = [];
+
+		$(function(){
+			var stats = initStats();
+			var scene = new THREE.Scene();
+
+			//frame buffer object
+			var fboScene = new THREE.Scene();
+			var fboTexture = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat } );
+			var quadGeometry = new THREE.PlaneGeometry( window.innerWidth, window.innerHeight, 1, 1 );
+			var quadMaterial = new THREE.ShaderMaterial({
+				uniforms: {
+					time: { 
+						type: 'f', 
+						value: millis()
+					},
+					speed: {
+						type: 'f',
+						value: controls.speed
+					}, 
+					lineWidth: {
+						type: 'f',
+						value: controls.lineWidth
+					}
+				},
+				vertexShader: $('#vertex-shader').text(),
+				fragmentShader: $('#fragment-shader').text()
+			});
+			var quad = new THREE.Mesh(quadGeometry, quadMaterial);
+			fboScene.add(quad);
+
+			var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 1, 1000 );
+
+			scene.add(camera);
+			fboScene.add(camera);
+
+			camera.position.x = 0;
+			camera.position.y =	0;
+			camera.position.z = 100;
+			camera.lookAt(scene.position);
+
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setClearColor(0xff0000);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+
+			//var axes = new THREE.AxisHelper(20);
+			//scene.add(axes);
+
+			var planeGeometry = new THREE.PlaneGeometry(planeWidth, planeHeight, 1, 1);
+			var planeMaterial = new THREE.MeshBasicMaterial({
+				//color: 0x000000,
+				map: fboTexture
+			});
+
+			for(var i = 0; i < columns; i++){
+				for(var j = 0; j < rows; j++){
+					var plane = new THREE.Mesh(planeGeometry, planeMaterial),
+						index = [(i * rows) + j];
+					plane.position.x = -(window.innerWidth/2) + planeWidth/2 + planeWidth * j;
+					plane.position.y = -(window.innerHeight/2) + planeHeight/2 + planeHeight * i;
+					plane.position.z = 0;
+
+					planes[index] = {
+						mesh : plane,
+						rotationOffset: Math.PI/8 * (i + j),
+						amplitude: Math.random() * 0.15,
+						speed: 1.0
+					};
+					scene.add(planes[index].mesh);
+				}
+			}
+
+			$('#WebGL-output').append(renderer.domElement);
+			renderer.render(fboScene, camera, fboTexture, true);
+			renderScene();
+
+			function renderScene(){
+				requestAnimationFrame(renderScene);
+
+				quadMaterial.uniforms.time.value = millis();
+				quadMaterial.uniforms.speed.value = controls.speed;
+				quadMaterial.uniforms.lineWidth.value = controls.lineWidth;
+
+				// plane.rotation.z = Math.sin(millis() / 1000) * 0.5;
+				planes.forEach(function(plane){
+					plane.mesh.rotation.z = Math.sin((millis() * plane.speed + plane.rotationOffset)/1000) * plane.amplitude;
+				});
+
+				stats.update();
+				renderer.render(fboScene, camera, fboTexture, true);
+				renderer.render(scene, camera);
+
+			}
+		});
+	</script>
+</body>
+</html>

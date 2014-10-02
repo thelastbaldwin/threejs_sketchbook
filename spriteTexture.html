@@ -1,0 +1,206 @@
+<html>
+<head>
+	<title>Sprite Texture</title>
+	<script src="js/third_party/three.min.js"></script>
+	<script src="js/third_party/jquery-2.1.1.min.js"></script>
+	<script src="js/third_party/stats.min.js"></script>
+	<script src="js/third_party/dat.gui.min.js"></script>
+	<link rel="stylesheet" href="css/style.css">
+	<script id="vertex-shader" type="x-shader/x-vertex">
+		uniform sampler2D videoTexture;
+		uniform float amplitude;
+
+		varying vec2 vUv;
+
+		float brightness(vec4 color){
+			return (color.x + color.y + color.z) / 3.0;
+		}
+
+		void main() {
+			vUv = uv;
+			// vec4 location = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+			vec4 textureColor = texture2D(videoTexture, vUv);
+			gl_Position = projectionMatrix * modelViewMatrix * vec4(position.xy, position.z + brightness(textureColor) * amplitude, 1.0);
+		}
+
+	</script>
+	<script id="fragment-shader" type="x-shader/x-fragment">
+		uniform sampler2D videoTexture;
+		varying vec2 vUv;
+
+		void main() {
+			vec2 position = vec2(gl_FragCoord.x, gl_FragCoord.y);
+			gl_FragColor = texture2D(videoTexture, vUv);
+			//gl_FragColor = vec4(0, 0, 0, 1.0);
+		}
+	
+	</script>
+</head>
+<body>
+	<div id="Stats-output"></div>
+	<div id="WebGL-output"></div>
+	<script>
+		// var video = document.querySelector('video');
+
+		// var controls = new function(){
+		// 	this.amplitude = 500
+		// }
+
+		// var gui = new dat.GUI();
+		// gui.add(controls, 'amplitude', 20, 500);
+
+		// navigator.getUserMedia = ( navigator.getUserMedia ||
+  //                      navigator.webkitGetUserMedia ||
+  //                      navigator.mozGetUserMedia ||
+  //                      navigator.msGetUserMedia);
+		function initStats(){
+			var stats = new Stats();
+			stats.setMode(0);
+			stats.domElement.style.position = 'absolute',
+			stats.domElement.style.left = '0px';
+			stats.domElement.style.top = '0px';
+			$('#Stats-output').append(stats.domElement);
+			return stats;
+		}
+
+		$(function(){
+			var clock = new THREE.Clock();
+			var stats = initStats();
+			var scene = new THREE.Scene();
+
+			var camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+
+			scene.add(camera);
+
+			camera.position.x = 0;
+			camera.position.y =	0;
+			camera.position.z = 500;
+			camera.lookAt(scene.position);
+
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setClearColor(0xffffff);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+
+			var axes = new THREE.AxisHelper(20);
+			scene.add(axes);
+
+			// TEXTURES
+			var spinningHampsterTexture = new THREE.ImageUtils.loadTexture('img/hampsterdance/spinning_hampster_spritesheet.gif')
+			var spinningHampsterMaterial = new THREE.MeshBasicMaterial({
+				map: spinningHampsterTexture,
+			});
+
+			var chipmunkTexture = new THREE.ImageUtils.loadTexture('img/hampsterdance/chipmunk_spritesheet.gif')
+			var chipmunkMaterial = new THREE.MeshBasicMaterial({
+				map: chipmunkTexture,
+			});
+
+			var outlinedHampsterTexture = new THREE.ImageUtils.loadTexture('img/hampsterdance/outlined_hampster_spritesheet.gif')
+			var oulinedHampsterMaterial = new THREE.MeshBasicMaterial({
+				map: outlinedHampsterTexture,
+			});
+
+			var hampsterTrioTexture = new THREE.ImageUtils.loadTexture('img/hampsterdance/three_hampsters_spritesheet.gif')
+			var hapsterTrioMaterial = new THREE.MeshBasicMaterial({
+				map: hampsterTrioTexture,
+			});
+			//END TEXTURES
+
+			var spinningHampsterAnimation = new TextureAnimator(spinningHampsterTexture, 8, 1, 8, 200); // texture, #horiz, #vert, #total, duration
+			var chipmunkAnimation = new TextureAnimator(chipmunkTexture, 6, 1, 6, 100);
+			var outlinedHampsterAnimation = new TextureAnimator(outlinedHampsterTexture, 17, 1, 17, 200);
+			var hampsterTrioAnimation = new TextureAnimator(hampsterTrioTexture, 4, 1, 4, 200);
+
+			var materialArray = [];
+			materialArray.push(spinningHampsterMaterial);
+			materialArray.push(chipmunkMaterial);
+			materialArray.push(spinningHampsterMaterial);
+			materialArray.push(oulinedHampsterMaterial);
+			materialArray.push(hapsterTrioMaterial);
+			materialArray.push(oulinedHampsterMaterial);
+			var hampsterMaterial = new THREE.MeshFaceMaterial(materialArray);
+
+			// BoxGeometry(width, height, depth, widthSegments, heightSegments, depthSegments)
+			var cubeGeometry = new THREE.BoxGeometry(100, 100, 100);
+			var cubeMaterial = new THREE.MeshBasicMaterial({
+				color: 0xff0000
+			});
+
+			var cube = new THREE.Mesh(cubeGeometry, hampsterMaterial);
+
+			cube.position.x = 0;
+			cube.position.y = 0;
+			cube.position.z = 0;
+
+			scene.add(cube);
+
+			//taken from http://stemkoski.github.io/Three.js/Texture-Animation.html
+			function TextureAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDuration) 
+			{	
+				// note: texture passed by reference, will be updated by the update function.
+					
+				this.tilesHorizontal = tilesHoriz;
+				this.tilesVertical = tilesVert;
+				// how many images does this spritesheet contain?
+				//  usually equals tilesHoriz * tilesVert, but not necessarily,
+				//  if there at blank tiles at the bottom of the spritesheet. 
+				this.numberOfTiles = numTiles;
+				texture.wrapS = texture.wrapT = THREE.RepeatWrapping; 
+				texture.repeat.set( 1 / this.tilesHorizontal, 1 / this.tilesVertical );
+
+				// how long should each image be displayed?
+				this.tileDisplayDuration = tileDispDuration;
+
+				// how long has the current image been displayed?
+				this.currentDisplayTime = 0;
+
+				// which image is currently being displayed?
+				this.currentTile = 0;
+					
+				this.update = function( milliSec )
+				{
+					this.currentDisplayTime += milliSec;
+					while (this.currentDisplayTime > this.tileDisplayDuration)
+					{
+						this.currentDisplayTime -= this.tileDisplayDuration;
+						this.currentTile++;
+						if (this.currentTile == this.numberOfTiles)
+							this.currentTile = 0;
+						var currentColumn = this.currentTile % this.tilesHorizontal;
+						texture.offset.x = currentColumn / this.tilesHorizontal;
+						var currentRow = Math.floor( this.currentTile / this.tilesHorizontal );
+						texture.offset.y = currentRow / this.tilesVertical;
+					}
+				};
+			}		
+
+
+			$('#WebGL-output').append(renderer.domElement);
+			renderScene();
+
+			function renderScene(){
+				var time = clock.getDelta() * 1000;
+				requestAnimationFrame(renderScene);
+				stats.update();
+				spinningHampsterAnimation.update(time);
+				chipmunkAnimation.update(time);
+				outlinedHampsterAnimation.update(time);
+				hampsterTrioAnimation.update(time);
+
+
+				cube.rotation.x = Math.sin(clock.getElapsedTime()) * 2;
+				cube.rotation.y = Math.cos(clock.getElapsedTime()) * 2;
+				cube.rotation.z = Math.cos(clock.getElapsedTime()) * 2;
+				// planeMaterial.uniforms.amplitude.value = controls.amplitude;
+				// if(video.readyState === video.HAVE_ENOUGH_DATA){
+				// 	if(videoTexture){
+				// 		videoTexture.needsUpdate = true;
+				// 	}
+				// }
+				renderer.render(scene, camera);
+
+			}
+		});
+	</script>
+</body>
+</html>

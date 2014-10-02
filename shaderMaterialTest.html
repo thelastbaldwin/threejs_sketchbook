@@ -1,0 +1,190 @@
+<html>
+<head>
+	<title>Wrapping Paper</title>
+	<script src="js/third_party/three.min.js"></script>
+	<script src="js/third_party/jquery-2.1.1.min.js"></script>
+	<script src="js/third_party/stats.min.js"></script>
+	<script src="js/third_party/dat.gui.min.js"></script>
+	<link rel="stylesheet" href="css/style.css">
+	<script id="vertex-shader" type="x-shader/x-vertex">
+		void main() {
+  			gl_Position = projectionMatrix *
+            modelViewMatrix *
+            vec4(position,1.0);
+		}
+
+	</script>
+	<script id="fragment-shader" type="x-shader/x-fragment">
+		#define WHITE vec4(1.0, 1.0, 1.0, 1.0)
+
+		uniform float time, speed, lineWidth;
+
+		void main() {
+			//diagonal bands
+			vec2 position = vec2(gl_FragCoord.x, gl_FragCoord.y);
+ 			 position.x += time * speed;
+			float remainder = floor((position.x + position.y)/lineWidth);
+
+			if(mod(remainder, 2.0) == 0.0){
+			gl_FragColor = WHITE;
+			}else{
+			discard;
+			}
+		}
+	
+	</script>
+</head>
+<body>
+	<div id="Stats-output"></div>
+	<div id="WebGL-output"></div>
+	<script>
+		//generate color ramp
+		function componentToHex(c) {
+		    var hex = c.toString(16);
+		    return hex.length == 1 ? "0" + hex : hex;
+		}
+
+		function rgbToHex(r, g, b) {
+		    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+		}
+
+		//array, int
+		function generateColorRamp(colors, steps){
+			var colorIntervals = [],
+			i, j,
+			deltaR,
+			deltaG,
+			deltaB;
+
+			for(i = 0; i < colors.length -1; i++){
+				deltaR = (colors[i+1][0] - colors[i][0]) / steps;
+				deltaG = (colors[i+1][1] - colors[i][1]) / steps;
+				deltaB = (colors[i+1][2] - colors[i][2]) / steps;
+
+				for(j = 0; j < steps; j++){
+					var newColor = [
+						Math.abs(parseInt(colors[i][0] + deltaR * j, 10)),
+						Math.abs(parseInt(colors[i][1] + deltaG * j, 10)),
+						Math.abs(parseInt(colors[i][2] + deltaB * j, 10)),
+					];
+
+					colorIntervals.push(newColor);
+
+					console.log(newColor[0], newColor[1], newColor[2]);
+				}
+			}
+
+			return colorIntervals;
+		}
+
+		var RED = [255, 0, 0],
+			GOLD = [255,215,0],
+			SILVER = [192, 192, 192],
+			//total steps in ramp from red -> gold -> silver -> red
+			STEPS = 200,
+			//hex color values
+			colorIntervals = generateColorRamp([RED, GOLD, SILVER, RED], STEPS);
+
+			colorIntervals.forEach(function(colorValue, index, array){
+				colorIntervals[index] = rgbToHex(colorValue[0], colorValue[1], colorValue[2]);
+			});
+
+		//end color generation
+
+		var millis = (function(){
+			var startTime = new Date().getTime();
+
+			return function(){
+				return new Date().getTime() - startTime;
+			}
+		}());
+
+		var controls = new function(){
+			this.lineWidth = 500,
+			this.speed = 0.20,
+			this.colorCyclingSpeed = 0.05
+		};
+
+		var gui = new dat.GUI();
+		gui.add(controls, 'lineWidth', 100, 500);
+		gui.add(controls, 'speed', 0.2, 10);
+		gui.add(controls, 'colorCyclingSpeed', 0.05, 1.0);
+
+		function initStats(){
+			var stats = new Stats();
+			stats.setMode(0);
+			stats.domElement.style.position = 'absolute',
+			stats.domElement.style.left = '0px';
+			stats.domElement.style.top = '0px';
+			$('#Stats-output').append(stats.domElement);
+			return stats;
+		}
+
+		var rows = 8,
+			columns = 8,
+			planeWidth = window.innerWidth / rows,
+			planeHeight = window.innerHeight / columns,
+			padding = planeHeight * 0.25,
+			planes = [];
+
+		$(function(){
+			var stats = initStats();
+
+			//frame buffer object
+			var fboScene = new THREE.Scene();
+			var fboTexture = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat } );
+			var quadGeometry = new THREE.PlaneGeometry( window.innerWidth, window.innerHeight, 1, 1 );
+			var quadMaterial = new THREE.ShaderMaterial({
+				uniforms: {
+					time: { 
+						type: 'f', 
+						value: millis()
+					},
+					speed: {
+						type: 'f',
+						value: controls.speed
+					}, 
+					lineWidth: {
+						type: 'f',
+						value: controls.lineWidth
+					}
+				},
+				vertexShader: $('#vertex-shader').text(),
+				fragmentShader: $('#fragment-shader').text()
+			});
+			var quad = new THREE.Mesh(quadGeometry, quadMaterial);
+			fboScene.add(quad);
+
+			var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 1, 1000 );
+
+			fboScene.add(camera);
+
+			camera.position.x = 0;
+			camera.position.y =	0;
+			camera.position.z = 100;
+			camera.lookAt(fboScene.position);
+
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+
+		
+			$('#WebGL-output').append(renderer.domElement);
+			renderScene();
+
+			function renderScene(){
+				stats.update();
+				var time = millis();
+				requestAnimationFrame(renderScene);
+
+				renderer.setClearColor(colorIntervals[parseInt(time * controls.colorCyclingSpeed) % 800]);
+
+				quadMaterial.uniforms.time.value = time;
+				quadMaterial.uniforms.speed.value = controls.speed;
+				quadMaterial.uniforms.lineWidth.value = controls.lineWidth;
+				
+				renderer.render(fboScene, camera);
+			}
+		});
+	</script>
+</body>
+</html>

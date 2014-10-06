@@ -17,16 +17,66 @@
 			renderer.setClearColor(0xffffff);
 			renderer.setSize(window.innerWidth, window.innerHeight);
 
-		var controls = new function(){
-			this.lineWidth = 500,
-			this.speed = 0.20,
-			this.colorCyclingSpeed = 0.05
+		var spotLightOptions = new function(){
+			this.color = 0xffffff;
+			this.x = 0;
+			this.y = 36;
+			this.z = 1000;
+			this.intensity = 0.5;
+		};
+
+		var ambientLightOptions = new function(){
+			this.color =  0xa24c4c;
+		};
+
+		var textOptions = new function(){
+			this.x = -210;
+			this.y = -36;
+			this.z = 860;
+			this.ambient = 0xf03d3d;
+			this.specular = 0x5c5c5c;
+			this.shininess = 30;
+		};
+
+		var backgroundOptions = new function(){
+			this.diffuse = 0xff7b00,
+			this.ambient = 0xffffff
+		};
+
+		var directionalLightOptions = new function(){
+			this.color = 0xffffff;
+			this.x = window.innerWidth;
+			this.y = window.innerHeight/2;
+			this.z = 1000;
+			this.intensity = 0.5;
 		};
 
 		var gui = new dat.GUI();
-		gui.add(controls, 'lineWidth', 100, 500);
-		gui.add(controls, 'speed', 0.2, 10);
-		gui.add(controls, 'colorCyclingSpeed', 0.05, 1.0);
+		var ambientLightControls = gui.addFolder('ambientLight');
+		ambientLightControls.addColor(ambientLightOptions, 'color');
+		var directionalLightControls = gui.addFolder('directionalLight');
+		directionalLightControls.addColor(directionalLightOptions, 'color');
+		directionalLightControls.add(directionalLightOptions, 'x');
+		directionalLightControls.add(directionalLightOptions, 'y');
+		directionalLightControls.add(directionalLightOptions, 'z');
+		directionalLightControls.add(directionalLightOptions, 'intensity');
+		var spotLightControls = gui.addFolder('spotLight');
+		spotLightControls.addColor(spotLightOptions, 'color');
+		spotLightControls.add(spotLightOptions, 'x', -window.innerWidth/2, window.innerWidth/2);
+		spotLightControls.add(spotLightOptions, 'y', -window.innerHeight/2, window.innerHeight/2);
+		spotLightControls.add(spotLightOptions, 'z', 0, 1000);
+		spotLightControls.add(spotLightOptions, 'intensity', 0.0, 1.0);
+		var textControls = gui.addFolder('text position');
+		textControls.add(textOptions, 'x', -window.innerWidth/2, window.innerWidth/2);
+		textControls.add(textOptions, 'y', -window.innerHeight/2, window.innerHeight/2);
+		textControls.add(textOptions, 'z', 0, 1000);
+		var textMaterialControls = gui.addFolder('text material');
+		textMaterialControls.addColor(textOptions, 'ambient');
+		textMaterialControls.addColor(textOptions, 'specular');
+		textMaterialControls.add(textOptions, 'shininess', 0, 100);
+		var backgroundMaterialControls = gui.addFolder('background material');
+		backgroundMaterialControls.addColor(backgroundOptions, 'diffuse');
+		backgroundMaterialControls.addColor(backgroundOptions, 'ambient');
 
 		function initStats(){
 			var stats = new Stats();
@@ -56,39 +106,57 @@
 
 			var textGeometry = new THREE.TextGeometry('b\'dass', {
 				size: 72,
-				height: 10,
+				height: 1,
 				curveSegments: 10,
 				font: 'helvetiker',
 				weight: 'normal',
 				style: 'normal',
-				bevelEnabled: false,
-				bevelThickness: 10,
-				bevelSize: 8
-			});
-
-			var textMaterial = new THREE.MeshBasicMaterial({
-				color: 0xff0000,
+				bevelEnabled: true,
+				bevelThickness: 2,
+				bevelSize: 1
 			});
 
 			var shinyTextMaterial = new THREE.MeshPhongMaterial({
 				ambient: 0xff0000,
-				specular: 0xffffff,
+				specular: 0x0000ff,
 				shininess: 30
 			});
 
 			var textMesh = new THREE.Mesh(textGeometry, shinyTextMaterial);
-
-			textMesh.position.x = 0;
-			textMesh.position.y = 0;
-			textMesh.position.z = 500;
-
 			scene.add(textMesh);
 
+			var backgroundMaterial = new THREE.MeshLambertMaterial({
+				color: 0xff7b00,
+				ambient: 0xffffff
+			});
+
+			var backgroundGeometry = new THREE.PlaneGeometry(
+				window.innerWidth * 10, // width
+				window.innerHeight * 10, // height
+				24, // widthSegments
+				24 // heightSegments
+			);
+
+			var background = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
+			background.position.x = 0;
+			background.position.y = 0;
+			background.position.z = 0;
+			scene.add(background);
+
 			//lights
-			var spotLight = new THREE.SpotLight(0x00ffff);
+			var spotLight = new THREE.SpotLight();
+			spotLight.color = new THREE.Color(0x00ff00);
 			spotLight.position.set(100, 100, 1000);
 			spotLight.castShadow = false;
 			scene.add(spotLight);
+
+			var ambientLight = new THREE.AmbientLight();
+			scene.add(ambientLight);
+
+			var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+			directionalLight.position.x = window.innerWidth;
+			directionalLight.position.y = window.innerHeight/2;
+			scene.add(directionalLight);
 
 			$('#WebGL-output').append(renderer.domElement);
 			renderScene();
@@ -96,8 +164,31 @@
 			function renderScene(){
 				requestAnimationFrame(renderScene);
 				stats.update();
+				spotLight.color = new THREE.Color(spotLightOptions.color);
+				spotLight.position.x = spotLightOptions.x;
+				spotLight.position.y = spotLightOptions.y;
+				spotLight.position.z = spotLightOptions.z;
+				spotLight.intensity = spotLightOptions.intensity;
 
-				
+				textMesh.position.x = textOptions.x;
+				textMesh.position.y = textOptions.y;
+				textMesh.position.z = textOptions.z;
+
+				shinyTextMaterial.ambient = new THREE.Color(textOptions.ambient);
+				shinyTextMaterial.specular = new THREE.Color(textOptions.specular);
+				shinyTextMaterial.shininess = textOptions.shininess;
+
+				ambientLight.color = new THREE.Color(ambientLightOptions.color);
+
+				backgroundMaterial.color = new THREE.Color(backgroundOptions.diffuse);
+				backgroundMaterial.ambient = new THREE.Color(backgroundOptions.ambient);
+
+				directionalLight.color = new THREE.Color(directionalLightOptions.color);
+				directionalLight.intensity = directionalLightOptions.intensity;
+				directionalLight.position.x = directionalLightOptions.x;
+				directionalLight.position.y = directionalLightOptions.y;
+				directionalLight.position.z = directionalLightOptions.z;
+
 				renderer.render(scene, camera);
 			}
 		});

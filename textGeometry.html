@@ -13,9 +13,14 @@
 	<div id="Stats-output"></div>
 	<div id="WebGL-output"></div>
 	<script>
-		var renderer = new THREE.WebGLRenderer();
+		var renderer = new THREE.WebGLRenderer(),
+			WIDTH = 1520,
+			HEIGHT = 80;
 			renderer.setClearColor(0xffffff);
-			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.setSize(WIDTH, HEIGHT),
+			clock = new THREE.Clock();
+
+		var dotTexture = THREE.ImageUtils.loadTexture('img/ZELLA_RunDotReflective_Pattern.jpg');
 
 		var spotLightOptions = new function(){
 			this.color = 0xffffff;
@@ -39,14 +44,14 @@
 		};
 
 		var backgroundOptions = new function(){
-			this.diffuse = 0xff7b00,
+			this.diffuse = 0xffffff,
 			this.ambient = 0xffffff
 		};
 
 		var directionalLightOptions = new function(){
 			this.color = 0xffffff;
-			this.x = window.innerWidth;
-			this.y = window.innerHeight/2;
+			this.x = WIDTH;
+			this.y = HEIGHT/2;
 			this.z = 1000;
 			this.intensity = 0.5;
 		};
@@ -62,13 +67,13 @@
 		directionalLightControls.add(directionalLightOptions, 'intensity');
 		var spotLightControls = gui.addFolder('spotLight');
 		spotLightControls.addColor(spotLightOptions, 'color');
-		spotLightControls.add(spotLightOptions, 'x', -window.innerWidth/2, window.innerWidth/2);
-		spotLightControls.add(spotLightOptions, 'y', -window.innerHeight/2, window.innerHeight/2);
+		spotLightControls.add(spotLightOptions, 'x', -WIDTH/2, WIDTH/2);
+		spotLightControls.add(spotLightOptions, 'y', -HEIGHT/2, HEIGHT/2);
 		spotLightControls.add(spotLightOptions, 'z', 0, 1000);
 		spotLightControls.add(spotLightOptions, 'intensity', 0.0, 1.0);
 		var textControls = gui.addFolder('text position');
-		textControls.add(textOptions, 'x', -window.innerWidth/2, window.innerWidth/2);
-		textControls.add(textOptions, 'y', -window.innerHeight/2, window.innerHeight/2);
+		textControls.add(textOptions, 'x', -WIDTH, WIDTH);
+		textControls.add(textOptions, 'y', -HEIGHT, HEIGHT);
 		textControls.add(textOptions, 'z', 0, 1000);
 		var textMaterialControls = gui.addFolder('text material');
 		textMaterialControls.addColor(textOptions, 'ambient');
@@ -104,7 +109,7 @@
 			var stats = initStats();
 			var scene = new THREE.Scene();
 
-			var camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+			var camera = new THREE.PerspectiveCamera(45, WIDTH/HEIGHT, 0.1, 1000);
 
 			scene.add(camera);
 
@@ -124,11 +129,12 @@
 				weight: 'normal',
 				style: 'normal',
 				bevelEnabled: true,
-				bevelThickness: 2,
-				bevelSize: 1
+				bevelThickness: 0.5,
+				bevelSize: 2
 			});
 
 			var shinyTextMaterial = new THREE.MeshPhongMaterial({
+				color: 0xffffff,
 				ambient: 0xff0000,
 				specular: 0x0000ff,
 				shininess: 30
@@ -139,12 +145,13 @@
 
 			var backgroundMaterial = new THREE.MeshLambertMaterial({
 				color: 0xff7b00,
-				ambient: 0xffffff
+				ambient: 0xffffff,
+				map: dotTexture
 			});
 
 			var backgroundGeometry = new THREE.PlaneGeometry(
-				window.innerWidth * 10, // width
-				window.innerHeight * 10, // height
+				WIDTH * 10, // width
+				HEIGHT * 10, // height
 				24, // widthSegments
 				24 // heightSegments
 			);
@@ -152,7 +159,7 @@
 			var background = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
 			background.position.x = 0;
 			background.position.y = 0;
-			background.position.z = 0;
+			background.position.z = 200;
 			scene.add(background);
 
 			//lights
@@ -166,8 +173,8 @@
 			scene.add(ambientLight);
 
 			var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-			directionalLight.position.x = window.innerWidth;
-			directionalLight.position.y = window.innerHeight/2;
+			directionalLight.position.x = WIDTH;
+			directionalLight.position.y = HEIGHT/2;
 			scene.add(directionalLight);
 
 			$('#WebGL-output').append(renderer.domElement);
@@ -181,6 +188,7 @@
 				spotLight.position.y = spotLightOptions.y;
 				spotLight.position.z = spotLightOptions.z;
 				spotLight.intensity = spotLightOptions.intensity;
+				spotLight.target = textMesh;
 
 				textMesh.position.x = textOptions.x;
 				textMesh.position.y = textOptions.y;

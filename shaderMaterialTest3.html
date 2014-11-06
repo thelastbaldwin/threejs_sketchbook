@@ -163,8 +163,8 @@
 				vertexShader: $('#vertex-shader').text(),
 				fragmentShader: $('#fragment-shader').text()
 			});
-			var tri = new THREE.Mesh(quadGeometry, quadMaterial);
-			fboScene.add(tri);
+			var quad = new THREE.Mesh(quadGeometry, quadMaterial);
+			fboScene.add(quad);
 
 			var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 1, 1000 );
 			fboScene.add(camera);
@@ -177,18 +177,11 @@
 			var renderer = new THREE.WebGLRenderer();
 			renderer.setSize(window.innerWidth, window.innerHeight);
 
-			var planeGeometry = new THREE.PlaneGeometry(planeWidth, planeHeight, 1, 1);
-
-			var planeMaterial = new THREE.MeshBasicMaterial({
-				map: fboTexture
-			});		
-
 			var geometry = new THREE.Geometry();
 			geometry.vertices.push(new THREE.Vector3(0.0, 0.0, 0.0));
-			geometry.vertices.push(new THREE.Vector3(200, 0.0, 0.0));
-			geometry.vertices.push(new THREE.Vector3(0.0, 200, 0.0));
+			geometry.vertices.push(new THREE.Vector3(window.innerWidth/2, window.innerHeight/2, 0.0));
+			geometry.vertices.push(new THREE.Vector3(0.0, window.innerHeight/2, 0.0));
 			geometry.faces.push(new THREE.Face3(0, 1, 2));
-			geometry.applyMatrix(new THREE.Matrix4().makeRotationZ(30));
 
 			var triangleMaterial = new THREE.MeshBasicMaterial({
 				map: fboTexture
@@ -196,16 +189,20 @@
 
 			geometry.faceVertexUvs[0][0] = [
 				new THREE.Vector2(0, 0),
-				new THREE.Vector2(1, 1),
-				new THREE.Vector2(0, 1)
+				new THREE.Vector2(0, 1),
+				new THREE.Vector2(1, 1)
 			];
 
-			console.log(geometry.faceVertexUvs);
 
-			var triangle = new THREE.Mesh(geometry, triangleMaterial);
-			triangle.position.set(0, 0, 0);
-
-			scene.add(triangle);
+			var origin = new THREE.Vector3(0, 0, 0);
+			var triangle;
+			for(var i = 0; i < 36; i++){
+				triangle = new THREE.Mesh(geometry, triangleMaterial);
+				triangle.applyMatrix(new THREE.Matrix4().makeRotationZ(Math.PI * i/12));
+				triangle.applyMatrix(new THREE.Matrix4().makeTranslation(-50, -50, 0));
+				// triangle.position.set(0, -300, 0);
+				scene.add(triangle);
+			}
 
 		
 			$('#WebGL-output').append(renderer.domElement);
@@ -216,7 +213,7 @@
 				var time = millis();
 				requestAnimationFrame(renderScene);
 
-				//renderer.setClearColor(colorIntervals[parseInt(time * controls.colorCyclingSpeed) % STEPS]);
+				renderer.setClearColor(colorIntervals[parseInt(time * controls.colorCyclingSpeed) % STEPS]);
 
 				quadMaterial.uniforms.time.value = time;
 				quadMaterial.uniforms.speed.value = controls.speed;

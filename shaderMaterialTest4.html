@@ -4,7 +4,6 @@
 	<title>Wrapping Paper</title>
 	<script src="js/third_party/three.min.js"></script>
 	<script src="js/third_party/jquery-2.1.1.min.js"></script>
-	<script src="js/third_party/stats.min.js"></script>
 	<script src="js/third_party/dat.gui.min.js"></script>
 	<link rel="stylesheet" href="css/style.css">
 	<script id="vertex-shader" type="x-shader/x-vertex">
@@ -30,8 +29,13 @@
 		}
 	}
 	</script>
-	<script>
-	var orientations = [
+	</head>
+	<body>
+		<div id="Stats-output"></div>
+		<div id="WebGL-output"></div>
+		<script>
+		//locations
+		var orientations = [
 		{
 			"position":{  
 				"x":-932,
@@ -369,26 +373,8 @@
 				"_z":0.2945243112740382,
 				"_order":"XYZ"
 			}
-		}
-		],
-		//these arbitrary values were the original values of the composed canvas
-		originalSize = {x : 2158, y: 1360},
-		HEIGHT_RATIO = window.innerWidth/originalSize.x,
-		WIDTH_RATIO = window.innerHeight/originalSize.y;
+		}];
 
-		//remap x and y coordinates based on x and y values of current window
-		orientations = orientations.map(function(value, index, arr){
-			// value.position.x /= HEIGHT_RATIO;
-			// value.position.y /= WIDTH_RATIO;
-			// console.log(value);
-			return value;
-		});
-		</script>
-	</head>
-	<body>
-		<div id="Stats-output"></div>
-		<div id="WebGL-output"></div>
-		<script>
 		//generate color ramp
 		function componentToHex(c) {
 			var hex = c.toString(16);
@@ -450,12 +436,10 @@
 			colorIntervals.forEach(function(colorValue, index, array){
 				colorIntervals[index] = rgbToHex(colorValue[0], colorValue[1], colorValue[2]);
 			});
-
 		//end color generation
 
 		var millis = (function(){
 			var startTime = new Date().getTime();
-
 			return function(){
 				return new Date().getTime() - startTime;
 			}
@@ -469,9 +453,11 @@
 		};
 
 		var gui = new dat.GUI();
-		gui.add(controls, 'lineWidth', 50, 500);
+		gui.add(controls, 'lineWidth', 10, 500);
 		gui.add(controls, 'speed', 0.2, 10);
 		gui.add(controls, 'colorCyclingSpeed', 0.05, 1.0);
+		//default to hidden
+		dat.GUI.toggleHide();
 		// END GUI
 
 		function initStats(){
@@ -490,10 +476,8 @@
 				y: window.innerHeight/2 - event.y
 			};
 		};
-		triangles = [];
 
 		$(function(){
-			var stats = initStats();
 			var scene = new THREE.Scene();
 			var mousePos = {
 				x: 0,
@@ -538,8 +522,8 @@
 
 			var geometry = new THREE.Geometry();
 			geometry.vertices.push(new THREE.Vector3(0.0, 0.0, 0.0));
-			geometry.vertices.push(new THREE.Vector3(window.innerWidth/2, window.innerHeight/2, 0.0));
-			geometry.vertices.push(new THREE.Vector3(0.0, window.innerHeight/2, 0.0));
+			geometry.vertices.push(new THREE.Vector3(window.innerWidth * 0.8, window.innerHeight * 0.8, 0.0));
+			geometry.vertices.push(new THREE.Vector3(0.0, window.innerHeight * 0.8, 0.0));
 			geometry.faces.push(new THREE.Face3(0, 1, 2));
 
 			var triangleMaterial = new THREE.MeshBasicMaterial({
@@ -563,7 +547,6 @@
 			renderScene();
 
 			function renderScene(){
-				stats.update();
 				var time = millis();
 				requestAnimationFrame(renderScene);
 

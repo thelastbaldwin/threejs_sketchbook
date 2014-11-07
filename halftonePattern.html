@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>halftone pattern</title>
+	<style>
+		html, body{
+			margin: 0;
+			padding: 0;
+			height: 100%;
+		}
+
+		div{
+			position: absolute;
+			height: 100%;
+			width: 100%;
+			background-repeat: repeat;
+		}
+
+		#foreground{
+			background-image: url('img/solid_pattern_200.png');
+
+		}
+
+		#background{
+			background-image: url('img/halftone_pattern_200.png');
+		}
+	</style>
+</head>
+<body>
+	<div id="foreground" style="background-position: 0px 0px"></div>
+	<div id="background" style="background-position: 0px 38px"></div>
+	<script>
+		var foreground = document.getElementById('foreground');
+		var background = document.getElementById('background');
+		var speed = 1.4;
+
+		function updateFrame(){
+			foreground.style.backgroundPositionX = parseFloat(foreground.style.backgroundPositionX, 10) + speed + 'px';
+			background.style.backgroundPositionX = parseFloat(background.style.backgroundPositionX, 10) + speed * 0.75 + 'px';
+			window.requestAnimationFrame(updateFrame);
+		}
+
+		updateFrame();
+	</script>
+</body>
+</html>

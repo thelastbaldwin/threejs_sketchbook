@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Wrapping Paper</title>
+	<script src="js/third_party/three.min.js"></script>
+	<script src="js/third_party/jquery-2.1.1.min.js"></script>
+	<script src="js/third_party/stats.min.js"></script>
+	<script src="js/third_party/dat.gui.min.js"></script>
+	<link rel="stylesheet" href="css/style.css">
+	<script id="vertex-shader" type="x-shader/x-vertex">
+	void main() {
+		gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+	}
+
+	</script>
+	<script id="fragment-shader" type="x-shader/x-fragment">
+	#define WHITE vec4(1.0, 1.0, 1.0, 1.0)
+
+	uniform float time, speed, lineWidth;
+
+	void main() {
+		vec2 position = vec2(gl_FragCoord.x, gl_FragCoord.y);
+		position.y += time * speed;
+		float remainder = floor(position.y/lineWidth);
+
+		if(mod(remainder, 2.0) == 0.0){
+			gl_FragColor = WHITE;
+		}else{
+			discard;
+		}
+	}
+	</script>
+	<script>
+	var orientations = [
+		{
+			"position":{  
+				"x":-508.5,
+				"y":66,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":0.2945243112740431,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":362.5,
+				"y":156,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-0.19634954084936207,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":181.5,
+				"y":-297,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-0.7853981633974484,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":-516.5,
+				"y":-14,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-2.356194490192346,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":-508.5,
+				"y":274,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-2.5525440310417085,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":-433.5,
+				"y":239,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-0.6872233929727671,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":-49.5,
+				"y":206,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-0.39269908169872403,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":255.5,
+				"y":209,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-1.472621556370216,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":131.5,
+				"y":-85,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-0.9817477042468101,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":42.5,
+				"y":-223,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-1.6689710972195781,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":-182.5,
+				"y":-267,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-1.2762720155208536,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":-327.5,
+				"y":-146,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-1.8653206380689404,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":-523.5,
+				"y":-238,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-1.2762720155208536,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":-72.5,
+				"y":-121,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-1.0799224746714913,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":-283.5,
+				"y":-298,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-0.39269908169872403,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":-403.5,
+				"y":-325,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":0.09817477042468115,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":-344.5,
+				"y":-116,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":0.3926990816987242,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":-411.5,
+				"y":111,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-1.1780972450961724,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":-302.5,
+				"y":24,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-0.8835729338221293,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":-80.5,
+				"y":-73,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":-0.19634954084936196,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":317.5,
+				"y":-94,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":1.0799224746714915,
+				"_order":"XYZ"
+			}
+		},
+		{  
+			"position":{  
+				"x":484.5,
+				"y":-91,
+				"z":0
+			},
+			"rotation":{  
+				"_x":0,
+				"_y":0,
+				"_z":1.0799224746714915,
+				"_order":"XYZ"
+			}
+		}],
+		//these arbitrary values were the original values of the composed canvas
+		originalSize = {x : 2158, y: 1360},
+		HEIGHT_RATIO = window.innerWidth/originalSize.x,
+		WIDTH_RATIO = window.innerHeight/originalSize.y;
+
+		//remap x and y coordinates based on x and y values of current window
+		orientations = orientations.map(function(value, index, arr){
+			// value.position.x /= HEIGHT_RATIO;
+			// value.position.y /= WIDTH_RATIO;
+			// console.log(value);
+			return value;
+		});
+	</script>
+</head>
+<body>
+	<div id="Stats-output"></div>
+	<div id="WebGL-output"></div>
+	<script>
+		//generate color ramp
+		function componentToHex(c) {
+			var hex = c.toString(16);
+			return hex.length == 1 ? "0" + hex : hex;
+		}
+
+		function rgbToHex(r, g, b) {
+			return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+		}
+
+		//array, int
+		function generateColorRamp(colors, steps){
+			colors.push(colors[0]);
+
+			var colorIntervals = [],
+			i, j,
+			deltaR,
+			deltaG,
+			deltaB,
+			intervalSteps = steps / colors.length,
+			currentColorIndex,
+			nextColorIndex;
+
+			for(i = 0; i < colors.length; i++){	
+				if(i === colors.length - 1){
+					currentColorIndex = i - 1;
+					nextColorIndex = 0;
+				}else{
+					currentColorIndex = i;
+					nextColorIndex = i + 1;
+				}
+				deltaR = (colors[nextColorIndex][0] - colors[currentColorIndex][0]) / intervalSteps;
+				deltaG = (colors[nextColorIndex][1] - colors[currentColorIndex][1]) / intervalSteps;
+				deltaB = (colors[nextColorIndex][2] - colors[currentColorIndex][2]) / intervalSteps;
+
+				for(j = 0; j < intervalSteps; j++){
+					var newColor = [
+					Math.abs(parseInt(colors[i][0] + deltaR * j, 10)),
+					Math.abs(parseInt(colors[i][1] + deltaG * j, 10)),
+					Math.abs(parseInt(colors[i][2] + deltaB * j, 10)),
+					];
+
+					colorIntervals.push(newColor);
+				}
+			}
+
+			return colorIntervals;
+		}
+
+		var RED = [255, 0, 0],
+		GOLD = [255,215,0],
+		SILVER = [192, 192, 192],
+			//total steps in ramp from red -> gold -> silver -> red
+			STEPS = 800,
+			
+			colorIntervals = generateColorRamp([RED, GOLD, SILVER], STEPS);
+
+			//hex color values
+			colorIntervals.forEach(function(colorValue, index, array){
+				colorIntervals[index] = rgbToHex(colorValue[0], colorValue[1], colorValue[2]);
+			});
+
+		//end color generation
+
+		var millis = (function(){
+			var startTime = new Date().getTime();
+
+			return function(){
+				return new Date().getTime() - startTime;
+			}
+		}());
+
+		// GUI
+		var controls = new function(){
+			this.lineWidth = 50,
+			this.speed = 0.20,
+			this.colorCyclingSpeed = 0.05
+		};
+
+		var gui = new dat.GUI();
+		gui.add(controls, 'lineWidth', 50, 500);
+		gui.add(controls, 'speed', 0.2, 10);
+		gui.add(controls, 'colorCyclingSpeed', 0.05, 1.0);
+		// END GUI
+
+		function initStats(){
+			var stats = new Stats();
+			stats.setMode(0);
+			stats.domElement.style.position = 'absolute',
+			stats.domElement.style.left = '0px';
+			stats.domElement.style.top = '0px';
+			$('#Stats-output').append(stats.domElement);
+			return stats;
+		};
+
+		function getMousePosition(event){
+			return {
+				x: -window.innerWidth/2 + event.x,
+				y: window.innerHeight/2 - event.y
+			};
+		};
+		triangles = [];
+
+		$(function(){
+			var stats = initStats();
+			var scene = new THREE.Scene();
+			var mousePos = {
+				x: 0,
+				y: 0
+			};
+
+			// frame buffer object
+			var fboScene = new THREE.Scene();
+			var fboTexture = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat } );
+			var quadGeometry = new THREE.PlaneGeometry( window.innerWidth, window.innerHeight, 1, 1 );
+			var quadMaterial = new THREE.ShaderMaterial({
+				uniforms: {
+					time: { 
+						type: 'f', 
+						value: millis()
+					},
+					speed: {
+						type: 'f',
+						value: controls.speed
+					}, 
+					lineWidth: {
+						type: 'f',
+						value: controls.lineWidth
+					}
+				},
+				vertexShader: $('#vertex-shader').text(),
+				fragmentShader: $('#fragment-shader').text()
+			});
+			var quad = new THREE.Mesh(quadGeometry, quadMaterial);
+			fboScene.add(quad);
+
+			var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 1, 1000 );
+			fboScene.add(camera);
+
+			camera.position.x = 0;
+			camera.position.y =	0;
+			camera.position.z = 100;
+			camera.lookAt(scene.position);
+
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+
+			var geometry = new THREE.Geometry();
+			geometry.vertices.push(new THREE.Vector3(0.0, 0.0, 0.0));
+			geometry.vertices.push(new THREE.Vector3(window.innerWidth/2, window.innerHeight/2, 0.0));
+			geometry.vertices.push(new THREE.Vector3(0.0, window.innerHeight/2, 0.0));
+			geometry.faces.push(new THREE.Face3(0, 1, 2));
+
+			var triangleMaterial = new THREE.MeshBasicMaterial({
+				map: fboTexture
+			});
+
+			geometry.faceVertexUvs[0][0] = [
+			new THREE.Vector2(0, 0),
+			new THREE.Vector2(0, 1),
+			new THREE.Vector2(1, 1)
+			];
+
+			orientations.forEach(function(value){
+				console.log(value);
+				var triangle = new THREE.Mesh(geometry, triangleMaterial);
+				triangle.position.set(value.position.x, value.position.y, value.position.z);
+				triangle.rotation.z = value.rotation._z;
+				// triangle.rotation.z = value.rotation.z;
+				scene.add(triangle);
+			});
+
+			console.log(scene.children);
+
+			$('#WebGL-output').append(renderer.domElement);
+			renderScene();
+
+			function renderScene(){
+				stats.update();
+				var time = millis();
+				requestAnimationFrame(renderScene);
+
+				renderer.setClearColor(colorIntervals[parseInt(time * controls.colorCyclingSpeed) % STEPS]);
+
+				quadMaterial.uniforms.time.value = time;
+				quadMaterial.uniforms.speed.value = controls.speed;
+				quadMaterial.uniforms.lineWidth.value = controls.lineWidth;
+				
+				renderer.render(fboScene, camera, fboTexture, true);
+				renderer.render(scene, camera);
+			}
+		});
+</script>
+</body>
+</html>

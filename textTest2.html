@@ -28,57 +28,139 @@
 			}
 		];
 
+		var options = {
+			camera: new function(){
+				this.x = 15;
+				this.y = 15;
+				this.z = 30;
+			},
+			greenPlane : new function(){
+				this.position = {};
+				this.position.x = 0;
+				this.position.y = 5;
+				this.position.z = 0;
+				this.scale = {};
+				this.scale.x = 1;
+				this.scale.y = 1;
+			},
+			greenText: new function(){
+				this.position = {};
+				this.position.x = 0;
+				this.position.y = 5;
+				this.position.z = 0;
+			}
+		};
+
+		var gui = new dat.GUI();
+		var cameraControls = gui.addFolder('camera');
+		cameraControls.add(options.camera, 'x');
+		cameraControls.add(options.camera, 'y');
+		cameraControls.add(options.camera, 'z');
+		var greenTextControls = gui.addFolder('green text');
+		greenTextControls.add(options.greenText.position, 'x');
+		greenTextControls.add(options.greenText.position, 'y');
+		greenTextControls.add(options.greenText.position, 'z');
+		var greenPlaneControls = gui.addFolder('green plane');
+		greenPlaneControls.add(options.greenPlane.position, 'x');
+		greenPlaneControls.add(options.greenPlane.position, 'y');
+		greenPlaneControls.add(options.greenPlane.position, 'z');
+		var greenPlaneScaleControls = greenPlaneControls.addFolder('scale');
+		greenPlaneScaleControls.add(options.greenPlane.scale, 'x');
+		greenPlaneScaleControls.add(options.greenPlane.scale, 'y');
+		var redTextControls = gui.addFolder('red text');
+		var redPlane = gui.addFolder('red plane');
+
+
 		$(function(){
 			var scene = new THREE.Scene();
 
-			var camera = new THREE.PerspectiveCamera(45, window.innerWidth/ window.innerHeight, 0.1, 1000);
+			//var camera = new THREE.PerspectiveCamera(45, window.innerWidth/ window.innerHeight, 0.1, 1000);
+			var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -500, 500 );
 
 			var renderer = new THREE.WebGLRenderer();
-			renderer.setClearColorHex(0xFFFFFF);
+			renderer.setClearColor(0xFFFFFF);
 			renderer.setSize(window.innerWidth, window.innerHeight);
 
 			var axes = new THREE.AxisHelper(20);
 			scene.add(axes);
 
-			var textOptions = {
-				size: 10,
-				height: 1,
-				width: 1,
+			var greenTextOptions = {
+				size: 72,
+				height: 12,
+				width: 24,
 				font: 'helvetiker',
 				style: 'normal',
 				bevelEnabled: false
 			};
-			var textGeometry = new THREE.TextGeometry(phrases[0].green, textOptions);
-			var textMaterial = new THREE.MeshBasicMaterial({
-				color: 0x458B00,
-				wireframe: true
+			var greenTextGeometry = new THREE.TextGeometry(phrases[0].green, greenTextOptions);
+			var greenTextMaterial = new THREE.MeshBasicMaterial({
+				color: 0xBCDE16
 			});
-			var text = new THREE.Mesh(textGeometry, textMaterial);
-			text.position.x = -30;
-			text.position.y = 0;
-			text.position.z = 0;
-			scene.add(text);
+			var greenText = new THREE.Mesh(greenTextGeometry, greenTextMaterial);
+			greenText.position.x = -30;
+			greenText.position.y = 5;
+			greenText.position.z = 0;
+			scene.add(greenText);
 
-			var planeGeometry = new THREE.PlaneGeometry(60, 20, 1, 1);
+			var redTextOptions = {
+				size: 64,
+				height: 12,
+				width: 24,
+				font: 'helvetiker',
+				style: 'normal',
+				bevelEnabled: false
+			};
+			var redTextGeometry = new THREE.TextGeometry(phrases[0].red, redTextOptions);
+			var redTextMaterial = new THREE.MeshBasicMaterial({
+				color: 0xE33C2D
+			});
+			var redText = new THREE.Mesh(redTextGeometry, redTextMaterial);
+			redText.position.x = -30;
+			redText.position.y = -15;
+			redText.position.z = 0;
+			scene.add(redText);
+
+			var redPlaneGeometry = new THREE.PlaneGeometry(100, 20, 1, 1);
+			var greenPlaneGeometry = new THREE.PlaneGeometry(100, 20, 1, 1);
 			var planeMaterial = new THREE.MeshBasicMaterial({
 				color: 0xcccccc
 			});
-			var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+			var greenPlane = new THREE.Mesh(greenPlaneGeometry, planeMaterial);
+			var redPlane = new THREE.Mesh(redPlaneGeometry, planeMaterial);
+			greenPlane.rotation.x = -0.5 * Math.PI;
+			redPlane.rotation.x = -0.5 * Math.PI;
+			scene.add(redPlane);
+			scene.add(greenPlane);
 
-			plane.rotation.x = -0.5 * Math.PI;
-			plane.position.x = 15;
-			plane.position.y = 0;
-			plane.position.z = 0;
-
-			scene.add(plane);
-
-			camera.position.x = -30;
-			camera.position.y = 40;
+			camera.position.x = -15;
+			camera.position.y = 15;
 			camera.position.z = 30;
 			camera.lookAt(scene.position);
 
 			$('#WebGL-output').append(renderer.domElement);
-			renderer.render(scene, camera);
+
+			function renderScene(){
+				requestAnimationFrame(renderScene);
+				//camera
+				camera.position.x = options.camera.x;
+				camera.position.y = options.camera.y;
+				camera.position.z = options.camera.z;
+				//green text
+				greenText.position.x = options.greenText.position.x;
+				greenText.position.y = options.greenText.position.y;
+				greenText.position.z = options.greenText.position.z;
+				//plane for green text
+				greenPlane.position.x = options.greenPlane.position.x;
+				greenPlane.position.y = options.greenPlane.position.y;
+				greenPlane.position.z = options.greenPlane.position.z;
+				greenPlane.scale.x = options.greenPlane.scale.x;
+				greenPlane.scale.y = options.greenPlane.scale.y;
+				//red text
+				//plane for red text
+				renderer.render(scene, camera);
+			}
+
+			renderScene();
 		});
 	</script>
 </body>

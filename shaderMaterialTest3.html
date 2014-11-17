@@ -144,6 +144,16 @@
 			planes = [],
 			triangles = [];
 
+		//call this function in the console to output the current composition
+		triangles.print = function(){
+			console.log(JSON.stringify(this.map(function(value, index, arr){
+				return {
+					'position' : value.position,
+					'rotation' : value.rotation
+				}
+			})));
+		};
+
 		$(function(){
 			var stats = initStats();
 			var scene = new THREE.Scene();

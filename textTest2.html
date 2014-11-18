@@ -40,6 +40,17 @@
 			this.greenTextPositionX = 0;
 			this.greenTextPositionY = 0;
 			this.greenTextPositionZ = 0;
+			this.redTextPositionX = 0;
+			this.redTextPositionY = 0;
+			this.redTextPositionZ = 0;
+			this.redPlanePositionX = 0;
+			this.redPlanePositionY = 0;
+			this.redPlanePositionZ = 0;
+			this.redPlaneScaleX = 1;
+			this.redPlaneScaleY = 1;
+			this.spotlightPositionX = 0;
+			this.spotlightPositionY = 0;
+			this.spotlightPositionZ = 0;
 		};
 
 		var gui = new dat.GUI();
@@ -60,7 +71,20 @@
 		greenPlaneScaleControls.add(options, 'greenPlaneScaleX').name('x');
 		greenPlaneScaleControls.add(options, 'greenPlaneScaleY').name('y');
 		var redTextControls = gui.addFolder('red text');
-		var redPlane = gui.addFolder('red plane');
+		redTextControls.add(options, 'redTextPositionX').name('x');
+		redTextControls.add(options, 'redTextPositionY').name('y');
+		redTextControls.add(options, 'redTextPositionZ').name('z');
+		var redPlaneControls = gui.addFolder('red plane');
+		redPlaneControls.add(options, 'redPlanePositionX').name('x');
+		redPlaneControls.add(options, 'redPlanePositionY').name('y');
+		redPlaneControls.add(options, 'redPlanePositionZ').name('z');
+		var redPlaneScaleControls = redPlaneControls.addFolder('scale');
+		redPlaneScaleControls.add(options, 'redPlaneScaleX').name('x');
+		redPlaneScaleControls.add(options, 'redPlaneScaleY').name('y');
+		var spotlightControls = gui.addFolder('spotlight');
+		spotlightControls.add(options, 'spotlightPositionX').name('x');
+		spotlightControls.add(options, 'spotlightPositionY').name('y');
+		spotlightControls.add(options, 'spotlightPositionZ').name('z');
 
 		$(function(){
 			var scene = new THREE.Scene();
@@ -71,9 +95,15 @@
 			var renderer = new THREE.WebGLRenderer();
 			renderer.setClearColor(0xFFFFFF);
 			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.shadowMapEnabled = true;
 
 			var axes = new THREE.AxisHelper(20);
 			scene.add(axes);
+
+			var spotlight = new THREE.SpotLight(0xffffff);
+			spotlight.position.set(0, 100, 500);
+			spotlight.castShadow = true;
+			scene.add(spotlight);
 
 			var greenTextOptions = {
 				size: 72,
@@ -84,13 +114,14 @@
 				bevelEnabled: false
 			};
 			var greenTextGeometry = new THREE.TextGeometry(phrases[0].green, greenTextOptions);
-			var greenTextMaterial = new THREE.MeshBasicMaterial({
+			var greenTextMaterial = new THREE.MeshLambertMaterial({
 				color: 0xBCDE16
 			});
 			var greenText = new THREE.Mesh(greenTextGeometry, greenTextMaterial);
 			greenText.position.x = -30;
 			greenText.position.y = 5;
 			greenText.position.z = 0;
+			greenText.castShadow = true;
 			scene.add(greenText);
 
 			var redTextOptions = {
@@ -102,24 +133,27 @@
 				bevelEnabled: false
 			};
 			var redTextGeometry = new THREE.TextGeometry(phrases[0].red, redTextOptions);
-			var redTextMaterial = new THREE.MeshBasicMaterial({
+			var redTextMaterial = new THREE.MeshLambertMaterial({
 				color: 0xE33C2D
 			});
 			var redText = new THREE.Mesh(redTextGeometry, redTextMaterial);
 			redText.position.x = -30;
 			redText.position.y = -15;
 			redText.position.z = 0;
+			redText.castShadow = true;
 			scene.add(redText);
 
 			var redPlaneGeometry = new THREE.PlaneGeometry(100, 20, 1, 1);
 			var greenPlaneGeometry = new THREE.PlaneGeometry(100, 20, 1, 1);
-			var planeMaterial = new THREE.MeshBasicMaterial({
-				color: 0xcccccc
+			var planeMaterial = new THREE.MeshLambertMaterial({
+				color: 0xffffff
 			});
 			var greenPlane = new THREE.Mesh(greenPlaneGeometry, planeMaterial);
 			var redPlane = new THREE.Mesh(redPlaneGeometry, planeMaterial);
 			greenPlane.rotation.x = -0.5 * Math.PI;
+			greenPlane.receiveShadow = true;
 			redPlane.rotation.x = -0.5 * Math.PI;
+			redPlane.receiveShadow = true;
 			scene.add(redPlane);
 			scene.add(greenPlane);
 
@@ -147,8 +181,20 @@
 				greenPlane.scale.x = options.greenPlaneScaleX;
 				greenPlane.scale.y = options.greenPlaneScaleY;
 				//red text
+				redText.position.x = options.redTextPositionX;
+				redText.position.y = options.redTextPositionY;
+				redText.position.z = options.redTextPositionZ;
 				//plane for red text
+				redPlane.position.x = options.redPlanePositionX;
+				redPlane.position.y = options.redPlanePositionY;
+				redPlane.position.z = options.redPlanePositionZ;
+				redPlane.scale.x = options.redPlaneScaleX;
+				redPlane.scale.y = options.redPlaneScaleY;
 				renderer.render(scene, camera);
+				//spotlight
+				spotlight.position.x = options.spotlightPositionX;
+				spotlight.position.y = options.spotlightPositionY;
+				spotlight.position.z = options.spotlightPositionZ;
 			}
 
 			renderScene();

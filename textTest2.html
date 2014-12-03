@@ -27,86 +27,121 @@
 			}
 		];
 
+		var camera,
+		cameraParent,
+		greenText,
+		redText,
+		spotlight,
+		scene,
+		speed = 0.5;
+
 
 		$(function(){
-			var scene = new THREE.Scene();
+			scene = new THREE.Scene();
 			var clock = new THREE.Clock({autostart: true});
 
-			var camera = new THREE.PerspectiveCamera(45, window.innerWidth/ window.innerHeight, 0.1, 1000);
+			cameraParent = new THREE.Object3D();
+			cameraParent.position.x = 0;
+			cameraParent.position.y = 0;
+			cameraParent.position.z = 0;
+
+			camera = new THREE.PerspectiveCamera(45, window.innerWidth/ window.innerHeight, 0.1, 2000);
 			// var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -500, 500 );
+			camera.position.x = 0;
+			camera.position.y = 50;
+			camera.position.z = 1000;
+			// scene.add(camera);
+			cameraParent.add(camera);
+			
 
 			var renderer = new THREE.WebGLRenderer();
 			renderer.setClearColor(0xFFFFFF);
 			renderer.setSize(window.innerWidth, window.innerHeight);
 			renderer.shadowMapEnabled = true;
 
-			var axes = new THREE.AxisHelper(20);
+			var axes = new THREE.AxisHelper(150);
 			scene.add(axes);
 
-			var spotlight = new THREE.SpotLight(0xffffff);
-			spotlight.position.set(0, 100, 500);
+			spotlight = new THREE.SpotLight(0xffffff);
+			spotlight.position.set(0, 100, 1000);
 			spotlight.castShadow = true;
-			scene.add(spotlight);
+			cameraParent.add(spotlight);
+			scene.add(cameraParent);
 
 			var ambientLight = new THREE.AmbientLight(0x333333);
 			scene.add(ambientLight);
 
 			var greenTextOptions = {
-				size: 72,
+				size: 48,
 				height: 12,
-				width: 24,
+				// width: 24,
 				font: 'helvetiker',
 				style: 'normal',
-				bevelEnabled: false
+				bevelEnabled: true,
+				bevelThickness: 0.4,
+				bevelSize: 2
 			};
 			var greenTextGeometry = new THREE.TextGeometry(phrases[0].green, greenTextOptions);
-			var greenTextMaterial = new THREE.MeshLambertMaterial({
-				color: 0xBCDE16
+			// var greenTextMaterial = new THREE.MeshLambertMaterial({
+			// 	color: 0xBCDE16
+			// });
+			var greenTextMaterial = new THREE.MeshPhongMaterial({
+				ambient: 0xBCDE16,
+				specular: 0xFFFEA6,
+				color: 0x808E16,
+				shininess: 15
 			});
-			var greenText = new THREE.Mesh(greenTextGeometry, greenTextMaterial);
-			greenText.position.x = -200;
+			greenText = new THREE.Mesh(greenTextGeometry, greenTextMaterial);
+			greenText.position.x = -300;
 			greenText.position.y = 10;
-			greenText.position.z = -50;
+			greenText.position.z = 500;
 			greenText.castShadow = true;
 			scene.add(greenText);
 
 			var redTextOptions = {
-				size: 40,
+				size: greenTextOptions.size * 0.56,
 				height: 12,
 				width: 24,
 				font: 'helvetiker',
 				style: 'normal',
-				bevelEnabled: false
+				bevelEnabled: true,
+				bevelThickness: 0.4,
+				bevelSize: 1
 			};
 			var redTextGeometry = new THREE.TextGeometry(phrases[0].red, redTextOptions);
-			var redTextMaterial = new THREE.MeshLambertMaterial({
-				color: 0xE33C2D
+			var redTextMaterial = new THREE.MeshPhongMaterial({
+				ambient: 0xE33C2D,
+				specular: 0xFF8983,
+				color: 0x99251F,
+				shininess: 15
 			});
-			var redText = new THREE.Mesh(redTextGeometry, redTextMaterial);
-			redText.position.x = -100;
+			redText = new THREE.Mesh(redTextGeometry, redTextMaterial);
+			redText.position.x = -180;
 			redText.position.y = -10;
-			redText.position.z = 50;
+			redText.position.z = greenText.position.z + 50;
 			redText.castShadow = true;
 			scene.add(redText);
 
-			camera.position.x = 0;
-			camera.position.y = 50;
-			camera.position.z = 250;
+			var cylinderGeometry = new THREE.CylinderGeometry(300, 300, 1000, 32, 32);
+			var cylinderMaterial = new THREE.MeshLambertMaterial({color: 0x4669DB});
+			var cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+			cylinder.receiveShadow = true;
+			scene.add(cylinder);
+
+			// camera.setLens(150, 35);
 
 			$('#WebGL-output').append(renderer.domElement);
+
+			function updateCameraPosition(){
+				cameraParent.position.x = 1 * Math.sin(clock.getElapsedTime() * speed);
+				cameraParent.position.z = 1 * Math.cos(clock.getElapsedTime() * speed);
+				cameraParent.lookAt(scene.position);
+			}
 
 			function renderScene(){
 				requestAnimationFrame(renderScene);
 				renderer.render(scene, camera);
-				
-
-				camera.position.x = 250 * Math.sin(clock.getElapsedTime() * 0.75);
-				//camera.position.z = 250 * Math.cos(clock.getElapsedTime() * 0.1);
-				camera.lookAt(scene.position);
-				// camera.position.z += 0.05;
-				//redText.position.x -= 0.05;
-				//greenText.position.x -= 0.05;
-				// console.log(250 * Math.sin(clock.getElapsedTime()) * 2.0);
+				updateCameraPosition();
 			}
 
 			renderScene();

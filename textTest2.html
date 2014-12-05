@@ -24,6 +24,10 @@
 			{
 				green: 'COURAGE IS',
 				red: 'CONTAGIOUS'
+			},
+			{
+				green: 'ZONE',
+				red: 'ZELLA'
 			}
 		];
 
@@ -33,8 +37,7 @@
 		redText,
 		spotlight,
 		scene,
-		speed = 0.5;
-
+		speed = 0.25;
 
 		$(function(){
 			scene = new THREE.Scene();
@@ -48,7 +51,7 @@
 			camera = new THREE.PerspectiveCamera(45, window.innerWidth/ window.innerHeight, 0.1, 2000);
 			// var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -500, 500 );
 			camera.position.x = 0;
-			camera.position.y = 50;
+			camera.position.y = 0;
 			camera.position.z = 1000;
 			// scene.add(camera);
 			cameraParent.add(camera);
@@ -63,8 +66,11 @@
 			scene.add(axes);
 
 			spotlight = new THREE.SpotLight(0xffffff);
-			spotlight.position.set(0, 100, 1000);
+			spotlight.position.set(0, -30, 500);
+			spotlight.intensity = 0.5;
 			spotlight.castShadow = true;
+			spotlight.shadowMapWidth = 2048;
+			spotlight.shadowMapHeight = 2048;
 			cameraParent.add(spotlight);
 			scene.add(cameraParent);
 
@@ -72,63 +78,100 @@
 			scene.add(ambientLight);
 
 			var greenTextOptions = {
-				size: 48,
+				size: 24,
 				height: 12,
-				// width: 24,
 				font: 'helvetiker',
-				style: 'normal',
-				bevelEnabled: true,
-				bevelThickness: 0.4,
-				bevelSize: 2
-			};
-			var greenTextGeometry = new THREE.TextGeometry(phrases[0].green, greenTextOptions);
-			// var greenTextMaterial = new THREE.MeshLambertMaterial({
-			// 	color: 0xBCDE16
-			// });
-			var greenTextMaterial = new THREE.MeshPhongMaterial({
+				style: 'normal'
+			},
+			greenTextMaterial = new THREE.MeshPhongMaterial({
 				ambient: 0xBCDE16,
 				specular: 0xFFFEA6,
 				color: 0x808E16,
 				shininess: 15
-			});
-			greenText = new THREE.Mesh(greenTextGeometry, greenTextMaterial);
-			greenText.position.x = -300;
-			greenText.position.y = 10;
-			greenText.position.z = 500;
-			greenText.castShadow = true;
-			scene.add(greenText);
-
-			var redTextOptions = {
+			}), 
+			// greenTextMaterial = new THREE.MeshLambertMaterial({
+			// 	color: 0xBCDE16
+			// }),
+			redTextOptions = {
 				size: greenTextOptions.size * 0.56,
 				height: 12,
-				width: 24,
 				font: 'helvetiker',
-				style: 'normal',
-				bevelEnabled: true,
-				bevelThickness: 0.4,
-				bevelSize: 1
-			};
-			var redTextGeometry = new THREE.TextGeometry(phrases[0].red, redTextOptions);
-			var redTextMaterial = new THREE.MeshPhongMaterial({
+				style: 'normal'
+			},redTextMaterial = new THREE.MeshPhongMaterial({
 				ambient: 0xE33C2D,
 				specular: 0xFF8983,
 				color: 0x99251F,
 				shininess: 15
-			});
-			redText = new THREE.Mesh(redTextGeometry, redTextMaterial);
-			redText.position.x = -180;
-			redText.position.y = -10;
-			redText.position.z = greenText.position.z + 50;
-			redText.castShadow = true;
-			scene.add(redText);
+			}),
+			greenTextGeometries = [
+				new THREE.TextGeometry(phrases[0].green, greenTextOptions),
+				new THREE.TextGeometry(phrases[1].green, greenTextOptions),
+				new THREE.TextGeometry(phrases[2].green, greenTextOptions),
+				new THREE.TextGeometry(phrases[3].green, greenTextOptions)
+			],
+			greenTexts = [
+				new THREE.Mesh(greenTextGeometries[0], greenTextMaterial),
+				new THREE.Mesh(greenTextGeometries[1], greenTextMaterial),
+				new THREE.Mesh(greenTextGeometries[2], greenTextMaterial),
+				new THREE.Mesh(greenTextGeometries[3], greenTextMaterial)
+			],
+			redTextGeometries = [
+				new THREE.TextGeometry(phrases[0].red, redTextOptions),
+				new THREE.TextGeometry(phrases[1].red, redTextOptions),
+				new THREE.TextGeometry(phrases[2].red, redTextOptions),
+				new THREE.TextGeometry(phrases[3].red, redTextOptions)
+			],
+			redTexts = [
+				new THREE.Mesh(redTextGeometries[0], redTextMaterial),
+				new THREE.Mesh(redTextGeometries[1], redTextMaterial),
+				new THREE.Mesh(redTextGeometries[2], redTextMaterial),
+				new THREE.Mesh(redTextGeometries[3], redTextMaterial)
+			];
 
-			var cylinderGeometry = new THREE.CylinderGeometry(300, 300, 1000, 32, 32);
+			var rotation,
+			rTranslation,
+			gTranslation;
+			for(var i = 0; i < 4; i++){
+				greenTexts[i].castShadow = true;
+				redTexts[i].castShadow = true;
+				rotation = new THREE.Matrix4().makeRotationY(i * Math.PI/2);
+				greenTexts[i].applyMatrix(rotation);
+				redTexts[i].applyMatrix(rotation);
+				switch(i){
+					case 0:
+						//Strong is Stylish
+						gTranslation = new THREE.Matrix4().makeTranslation(-90, 10, 200);
+						rTranslation = new THREE.Matrix4().makeTranslation(-30, -10, 210);
+						break;
+					case 1:
+						//Passion is Power
+						gTranslation = new THREE.Matrix4().makeTranslation(200, 10, 90);
+						rTranslation = new THREE.Matrix4().makeTranslation(210, -10, 40);
+						break;
+					case 2:
+						//Courage is Contagious 
+						gTranslation = new THREE.Matrix4().makeTranslation(90, 10, -200);
+						rTranslation = new THREE.Matrix4().makeTranslation(40, -10, -210);
+						break;
+					case 3:
+						//Zone Zella
+						gTranslation = new THREE.Matrix4().makeTranslation(-200, 10, -70);
+						rTranslation = new THREE.Matrix4().makeTranslation(-210, -10, -50);
+						break;
+				}
+				greenTexts[i].applyMatrix(gTranslation);
+				redTexts[i].applyMatrix(rTranslation);
+				scene.add(greenTexts[i]);
+				scene.add(redTexts[i]);
+			}
+
+			var cylinderGeometry = new THREE.CylinderGeometry(200, 200, 1000, 32, 32);
 			var cylinderMaterial = new THREE.MeshLambertMaterial({color: 0x4669DB});
 			var cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
 			cylinder.receiveShadow = true;
 			scene.add(cylinder);
 
-			// camera.setLens(150, 35);
+			camera.setLens(100, 35);
 
 			$('#WebGL-output').append(renderer.domElement);
 

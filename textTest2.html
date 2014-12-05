@@ -5,7 +5,7 @@
 	<script src="js/third_party/three.min.js"></script>
 	<script src="js/third_party/jquery-2.1.1.min.js"></script>
 	<script src="js/third_party/stats.min.js"></script>
-	<script src="js/fonts/helvetiker_font/helvetiker_regular.typeface.js"></script>
+	<script src="js/fonts/interstate_regular.typeface.js"></script>
 	<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -32,7 +32,7 @@
 		];
 
 		var camera,
-		cameraParent,
+		parent,
 		greenText,
 		redText,
 		spotlight,
@@ -43,18 +43,17 @@
 			scene = new THREE.Scene();
 			var clock = new THREE.Clock({autostart: true});
 
-			cameraParent = new THREE.Object3D();
-			cameraParent.position.x = 0;
-			cameraParent.position.y = 0;
-			cameraParent.position.z = 0;
+			parent = new THREE.Object3D();
+			parent.position.x = 0;
+			parent.position.y = 0;
+			parent.position.z = 0;
 
 			camera = new THREE.PerspectiveCamera(45, window.innerWidth/ window.innerHeight, 0.1, 2000);
-			// var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -500, 500 );
+			//camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -500, 500 );
 			camera.position.x = 0;
 			camera.position.y = 0;
 			camera.position.z = 1000;
-			// scene.add(camera);
-			cameraParent.add(camera);
+			parent.add(camera);
 			
 
 			var renderer = new THREE.WebGLRenderer();
@@ -67,41 +66,44 @@
 
 			spotlight = new THREE.SpotLight(0xffffff);
 			spotlight.position.set(0, -30, 500);
-			spotlight.intensity = 0.5;
 			spotlight.castShadow = true;
+			spotlight.shadowDarkness = 0.2;
 			spotlight.shadowMapWidth = 2048;
 			spotlight.shadowMapHeight = 2048;
-			cameraParent.add(spotlight);
-			scene.add(cameraParent);
+			parent.add(spotlight);
+
+			var planeSize = 360;
+			var planeTexture = THREE.ImageUtils.loadTexture('img/zella_pattern_256.jpg');
+			planeTexture.wrapT = THREE.RepeatWrapping;
+			planeTexture.offset.y = 0.1;
+			var planeGeometry = new THREE.PlaneGeometry(planeSize, planeSize, 32, 32);
+			var planeMaterial = new THREE.MeshBasicMaterial({map: planeTexture});
+			var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+			plane.receiveShadow = true;
+			plane.position.z = 100;
+			plane.rotation.z = Math.PI;
+			parent.add(plane);
+			scene.add(parent);
 
 			var ambientLight = new THREE.AmbientLight(0x333333);
 			scene.add(ambientLight);
 
 			var greenTextOptions = {
 				size: 24,
-				height: 12,
-				font: 'helvetiker',
+				height: 2,
+				font: 'interstate',
 				style: 'normal'
 			},
-			greenTextMaterial = new THREE.MeshPhongMaterial({
-				ambient: 0xBCDE16,
-				specular: 0xFFFEA6,
-				color: 0x808E16,
-				shininess: 15
+			greenTextMaterial = new THREE.MeshLambertMaterial({
+				color: 0xBCDE16
 			}), 
-			// greenTextMaterial = new THREE.MeshLambertMaterial({
-			// 	color: 0xBCDE16
-			// }),
 			redTextOptions = {
 				size: greenTextOptions.size * 0.56,
-				height: 12,
-				font: 'helvetiker',
+				height: 2,
+				font: 'interstate',
 				style: 'normal'
 			},redTextMaterial = new THREE.MeshPhongMaterial({
-				ambient: 0xE33C2D,
-				specular: 0xFF8983,
-				color: 0x99251F,
-				shininess: 15
+				color: 0xE33C2D
 			}),
 			greenTextGeometries = [
 				new THREE.TextGeometry(phrases[0].green, greenTextOptions),
@@ -141,22 +143,22 @@
 					case 0:
 						//Strong is Stylish
 						gTranslation = new THREE.Matrix4().makeTranslation(-90, 10, 200);
-						rTranslation = new THREE.Matrix4().makeTranslation(-30, -10, 210);
+						rTranslation = new THREE.Matrix4().makeTranslation(-30, -10, 205);
 						break;
 					case 1:
 						//Passion is Power
 						gTranslation = new THREE.Matrix4().makeTranslation(200, 10, 90);
-						rTranslation = new THREE.Matrix4().makeTranslation(210, -10, 40);
+						rTranslation = new THREE.Matrix4().makeTranslation(205, -10, 40);
 						break;
 					case 2:
 						//Courage is Contagious 
 						gTranslation = new THREE.Matrix4().makeTranslation(90, 10, -200);
-						rTranslation = new THREE.Matrix4().makeTranslation(40, -10, -210);
+						rTranslation = new THREE.Matrix4().makeTranslation(40, -10, -205);
 						break;
 					case 3:
 						//Zone Zella
 						gTranslation = new THREE.Matrix4().makeTranslation(-200, 10, -70);
-						rTranslation = new THREE.Matrix4().makeTranslation(-210, -10, -50);
+						rTranslation = new THREE.Matrix4().makeTranslation(-205, -10, -50);
 						break;
 				}
 				greenTexts[i].applyMatrix(gTranslation);
@@ -165,26 +167,23 @@
 				scene.add(redTexts[i]);
 			}
 
-			var cylinderGeometry = new THREE.CylinderGeometry(200, 200, 1000, 32, 32);
-			var cylinderMaterial = new THREE.MeshLambertMaterial({color: 0x4669DB});
-			var cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
-			cylinder.receiveShadow = true;
-			scene.add(cylinder);
-
 			camera.setLens(100, 35);
 
 			$('#WebGL-output').append(renderer.domElement);
 
 			function updateCameraPosition(){
-				cameraParent.position.x = 1 * Math.sin(clock.getElapsedTime() * speed);
-				cameraParent.position.z = 1 * Math.cos(clock.getElapsedTime() * speed);
-				cameraParent.lookAt(scene.position);
+				parent.position.x = 1 * Math.sin(clock.getElapsedTime() * speed);
+				parent.position.z = 1 * Math.cos(clock.getElapsedTime() * speed);
+				parent.lookAt(scene.position);
 			}
 
 			function renderScene(){
 				requestAnimationFrame(renderScene);
 				renderer.render(scene, camera);
 				updateCameraPosition();
+				planeTexture.offset.y	+= speed * 0.0075;
+			planeTexture.offset.y	%= 1;
+			planeTexture.needsUpdate	= true;
 			}
 
 			renderScene();

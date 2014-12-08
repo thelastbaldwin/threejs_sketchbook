@@ -61,13 +61,13 @@
 			renderer.setSize(window.innerWidth, window.innerHeight);
 			renderer.shadowMapEnabled = true;
 
-			var axes = new THREE.AxisHelper(150);
+			/*var axes = new THREE.AxisHelper(150);
 			scene.add(axes);
-
+*/
 			spotlight = new THREE.SpotLight(0xffffff);
 			spotlight.position.set(0, -30, 500);
 			spotlight.castShadow = true;
-			spotlight.shadowDarkness = 0.2;
+			spotlight.shadowDarkness = 0.4;
 			spotlight.shadowMapWidth = 2048;
 			spotlight.shadowMapHeight = 2048;
 			parent.add(spotlight);
@@ -80,7 +80,7 @@
 			var planeMaterial = new THREE.MeshBasicMaterial({map: planeTexture});
 			var plane = new THREE.Mesh(planeGeometry, planeMaterial);
 			plane.receiveShadow = true;
-			plane.position.z = 100;
+			plane.position.z = 180;
 			plane.rotation.z = Math.PI;
 			parent.add(plane);
 			scene.add(parent);

@@ -1,0 +1,57 @@
+<html>
+<head>
+	<title>tall Text</title>
+	<style type="text/css">
+		html, body{
+			margin: 0;
+			padding: 0;
+		}
+
+		.main{
+			position: relative;
+			height: 400px;
+			width: 240px;
+			background: url('../img/zella_pattern_256.jpg') repeat-y;
+		}
+
+		.gradient{
+			position: absolute;
+			z-index: 1;
+			width: 240px;
+			height: 400px;
+			background: -moz-linear-gradient(top,  rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(100%,rgba(255,255,255,0))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,0) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,0) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,0) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(255,255,255,0) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#00ffffff',GradientType=0 ); /* IE6-9 */
+		}
+
+		.logo{
+			position: absolute;
+			width: 240px;
+			top: 20px;
+			right: 12px;
+			z-index: 2;
+		}
+	</style>
+</head>
+<body>
+	I<div class="main">
+		<div class="gradient"></div>
+		<img class ="logo" src="../img/Zella_logo_ZZ_v_cmyk_fill.svg" alt="zella logo">
+	</div>
+	<script>
+		var main = document.querySelector('.main'),
+			speed = -0.5;
+
+		function updateFrame(){
+			main.style.backgroundPositionY = parseFloat(window.getComputedStyle(main).backgroundPositionY, 10) + speed + 'px';
+			window.requestAnimationFrame(updateFrame);
+		}
+
+		updateFrame();
+	</script>
+</body>
+</html>

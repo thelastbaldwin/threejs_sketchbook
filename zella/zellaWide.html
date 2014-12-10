@@ -50,8 +50,8 @@
 			camera = new THREE.PerspectiveCamera(45, window.innerWidth/ window.innerHeight, 0.1, 2000);
 			//camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -500, 500 );
 			camera.position.x = 0;
-			camera.position.y = 0;
-			camera.position.z = 1000;
+			camera.position.y = 10;
+			camera.position.z = 1100;
 			parent.add(camera);
 			
 
@@ -65,22 +65,19 @@
 			scene.add(axes);
 */
 			spotlight = new THREE.SpotLight(0xffffff);
-			spotlight.position.set(0, -30, 500);
-			spotlight.castShadow = true;
-			spotlight.shadowDarkness = 0.4;
-			spotlight.shadowMapWidth = 2048;
-			spotlight.shadowMapHeight = 2048;
+			spotlight.position.set(0, 0, 1500);
 			parent.add(spotlight);
 
-			var planeSize = 256, planeGeometry, planeMaterial, plane;
+			var planeSize = 2560, planeGeometry, planeMaterial, plane;
 			var planeTexture = THREE.ImageUtils.loadTexture('../img/zella_pattern_256.jpg', undefined, function(){
-				planeTexture.wrapT = THREE.RepeatWrapping;
+				planeTexture.wrapT = planeTexture.wrapS = THREE.RepeatWrapping;
+				planeTexture.repeat.set(10, 10);
 				planeTexture.offset.y = 0.1;
-				planeGeometry = new THREE.PlaneBufferGeometry(planeSize, planeSize, 32, 32);
+				planeGeometry = new THREE.PlaneBufferGeometry(planeSize, planeSize, 1, 1);
 				planeMaterial = new THREE.MeshBasicMaterial({map: planeTexture});
 				plane = new THREE.Mesh(planeGeometry, planeMaterial);
 				plane.receiveShadow = true;
-				plane.position.z = 180;
+				plane.position.z = 300;
 				plane.rotation.z = Math.PI;
 				parent.add(plane);
 			});
@@ -134,7 +131,8 @@
 
 			var rotation,
 			rTranslation,
-			gTranslation;
+			gTranslation,
+			radius = 550;
 			for(var i = 0; i < 4; i++){
 				greenTexts[i].castShadow = true;
 				redTexts[i].castShadow = true;
@@ -144,23 +142,23 @@
 				switch(i){
 					case 0:
 						//Strong is Stylish
-						gTranslation = new THREE.Matrix4().makeTranslation(-90, 10, 200);
-						rTranslation = new THREE.Matrix4().makeTranslation(-30, -10, 205);
+						gTranslation = new THREE.Matrix4().makeTranslation(-90, 10, radius);
+						rTranslation = new THREE.Matrix4().makeTranslation(-30, -10, radius);
 						break;
 					case 1:
 						//Passion is Power
-						gTranslation = new THREE.Matrix4().makeTranslation(200, 10, 90);
-						rTranslation = new THREE.Matrix4().makeTranslation(205, -10, 40);
+						gTranslation = new THREE.Matrix4().makeTranslation(radius, 10, 90);
+						rTranslation = new THREE.Matrix4().makeTranslation(radius, -10, 40);
 						break;
 					case 2:
 						//Courage is Contagious 
-						gTranslation = new THREE.Matrix4().makeTranslation(90, 10, -200);
-						rTranslation = new THREE.Matrix4().makeTranslation(40, -10, -205);
+						gTranslation = new THREE.Matrix4().makeTranslation(90, 10, -radius);
+						rTranslation = new THREE.Matrix4().makeTranslation(40, -10, -radius);
 						break;
 					case 3:
 						//Zone Zella
-						gTranslation = new THREE.Matrix4().makeTranslation(-200, 10, -70);
-						rTranslation = new THREE.Matrix4().makeTranslation(-205, -10, -50);
+						gTranslation = new THREE.Matrix4().makeTranslation(-radius, 10, -70);
+						rTranslation = new THREE.Matrix4().makeTranslation(-radius, -10, -50);
 						break;
 				}
 				greenTexts[i].applyMatrix(gTranslation);

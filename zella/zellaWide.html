@@ -72,17 +72,19 @@
 			spotlight.shadowMapHeight = 2048;
 			parent.add(spotlight);
 
-			var planeSize = 360;
-			var planeTexture = THREE.ImageUtils.loadTexture('img/zella_pattern_256.jpg');
-			planeTexture.wrapT = THREE.RepeatWrapping;
-			planeTexture.offset.y = 0.1;
-			var planeGeometry = new THREE.PlaneGeometry(planeSize, planeSize, 32, 32);
-			var planeMaterial = new THREE.MeshBasicMaterial({map: planeTexture});
-			var plane = new THREE.Mesh(planeGeometry, planeMaterial);
-			plane.receiveShadow = true;
-			plane.position.z = 180;
-			plane.rotation.z = Math.PI;
-			parent.add(plane);
+			var planeSize = 256, planeGeometry, planeMaterial, plane;
+			var planeTexture = THREE.ImageUtils.loadTexture('../img/zella_pattern_256.jpg', undefined, function(){
+				planeTexture.wrapT = THREE.RepeatWrapping;
+				planeTexture.offset.y = 0.1;
+				planeGeometry = new THREE.PlaneBufferGeometry(planeSize, planeSize, 32, 32);
+				planeMaterial = new THREE.MeshBasicMaterial({map: planeTexture});
+				plane = new THREE.Mesh(planeGeometry, planeMaterial);
+				plane.receiveShadow = true;
+				plane.position.z = 180;
+				plane.rotation.z = Math.PI;
+				parent.add(plane);
+			});
+			
 			scene.add(parent);
 
 			var ambientLight = new THREE.AmbientLight(0x333333);
@@ -102,7 +104,7 @@
 				height: 2,
 				font: 'interstate',
 				style: 'normal'
-			},redTextMaterial = new THREE.MeshPhongMaterial({
+			},redTextMaterial = new THREE.MeshLambertMaterial({
 				color: 0xE33C2D
 			}),
 			greenTextGeometries = [
@@ -167,7 +169,7 @@
 				scene.add(redTexts[i]);
 			}
 
-			camera.setLens(100, 35);
+			camera.setLens(400, 35);
 
 			$('#WebGL-output').append(renderer.domElement);
 

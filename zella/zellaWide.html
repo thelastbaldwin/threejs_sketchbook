@@ -36,7 +36,9 @@
 		redText,
 		spotlight,
 		scene,
-		speed = 0.25;
+		speed = 0.1,
+		height = 80,
+		width = 1360;
 
 		$(function(){
 			scene = new THREE.Scene();
@@ -47,17 +49,17 @@
 			parent.position.y = 0;
 			parent.position.z = 0;
 
-			camera = new THREE.PerspectiveCamera(45, window.innerWidth/ window.innerHeight, 0.1, 2000);
+			camera = new THREE.PerspectiveCamera(45, width/ height, 0.1, 2000);
 			//camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -500, 500 );
 			camera.position.x = 0;
-			camera.position.y = 10;
-			camera.position.z = 1100;
+			camera.position.y = 11;
+			camera.position.z = 1200;
 			parent.add(camera);
 			
 
 			var renderer = new THREE.WebGLRenderer();
 			renderer.setClearColor(0xFFFFFF);
-			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.setSize(width, height);
 			renderer.shadowMapEnabled = true;
 			renderer.shadowMapSoft = true;
 
@@ -88,7 +90,7 @@
 			scene.add(ambientLight);
 
 			var greenTextOptions = {
-				size: 24,
+				size: 22,
 				height: 2,
 				font: 'interstate',
 				style: 'normal'
@@ -132,7 +134,7 @@
 			var rotation,
 			rTranslation,
 			gTranslation,
-			radius = 550;
+			radius = 650;
 			for(var i = 0; i < 4; i++){
 				greenTexts[i].castShadow = true;
 				redTexts[i].castShadow = true;
@@ -142,23 +144,23 @@
 				switch(i){
 					case 0:
 						//Strong is Stylish
-						gTranslation = new THREE.Matrix4().makeTranslation(-90, 10, radius);
-						rTranslation = new THREE.Matrix4().makeTranslation(-30, -10, radius);
+						gTranslation = new THREE.Matrix4().makeTranslation(-90, 8, radius);
+						rTranslation = new THREE.Matrix4().makeTranslation(-30, -8, radius);
 						break;
 					case 1:
 						//Passion is Power
-						gTranslation = new THREE.Matrix4().makeTranslation(radius, 10, 90);
-						rTranslation = new THREE.Matrix4().makeTranslation(radius, -10, 40);
+						gTranslation = new THREE.Matrix4().makeTranslation(radius, 8, 90);
+						rTranslation = new THREE.Matrix4().makeTranslation(radius, -8, 40);
 						break;
 					case 2:
 						//Courage is Contagious 
-						gTranslation = new THREE.Matrix4().makeTranslation(90, 10, -radius);
-						rTranslation = new THREE.Matrix4().makeTranslation(40, -10, -radius);
+						gTranslation = new THREE.Matrix4().makeTranslation(90, 8, -radius);
+						rTranslation = new THREE.Matrix4().makeTranslation(40, -8, -radius);
 						break;
 					case 3:
 						//Zone Zella
-						gTranslation = new THREE.Matrix4().makeTranslation(-radius, 10, -70);
-						rTranslation = new THREE.Matrix4().makeTranslation(-radius, -10, -50);
+						gTranslation = new THREE.Matrix4().makeTranslation(-radius, 8, -70);
+						rTranslation = new THREE.Matrix4().makeTranslation(-radius, -8, -50);
 						break;
 				}
 				greenTexts[i].applyMatrix(gTranslation);
@@ -167,7 +169,7 @@
 				scene.add(redTexts[i]);
 			}
 
-			camera.setLens(400, 35);
+			camera.setLens(300, 25);
 
 			$('#WebGL-output').append(renderer.domElement);
 

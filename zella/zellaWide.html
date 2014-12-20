@@ -38,8 +38,8 @@
 		spotlight,
 		scene,
 		speed = 0.1,
-		height = 80,
-		width = 1360;
+		height = 400,
+		width = 80;
 
 		$(function(){
 			scene = new THREE.Scene();
@@ -54,7 +54,8 @@
 			//camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -500, 500 );
 			camera.position.x = 0;
 			camera.position.y = 11;
-			camera.position.z = 1200;
+			camera.position.z = 750;
+			camera.rotation.z = Math.PI/2;
 			parent.add(camera);
 			
 
@@ -80,7 +81,7 @@
 				planeMaterial = new THREE.MeshBasicMaterial({map: planeTexture});
 				plane = new THREE.Mesh(planeGeometry, planeMaterial);
 				plane.receiveShadow = true;
-				plane.position.z = 300;
+				plane.position.z = 150;
 				plane.rotation.z = Math.PI;
 				parent.add(plane);
 			});
@@ -135,7 +136,7 @@
 			var rotation,
 			rTranslation,
 			gTranslation,
-			radius = 650;
+			radius = 300;
 			for(var i = 0; i < 4; i++){
 				greenTexts[i].castShadow = true;
 				redTexts[i].castShadow = true;
@@ -170,7 +171,7 @@
 				scene.add(redTexts[i]);
 			}
 
-			camera.setLens(300, 25);
+			// camera.setLens(300, 25);
 
 			$('#WebGL-output').append(renderer.domElement);
 
@@ -184,8 +185,8 @@
 				requestAnimationFrame(renderScene);
 				renderer.render(scene, camera);
 				updateCameraPosition();
-				planeTexture.offset.y	+= speed * 0.0075;
-			planeTexture.offset.y	%= 1;
+				planeTexture.offset.x	-= speed * 0.0075;
+			planeTexture.offset.x	%= 1;
 			planeTexture.needsUpdate	= true;
 			}
 

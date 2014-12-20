@@ -15,3 +15,6 @@
 #ignore js dependencies
 js/third_party/
 js/fonts/
+
+*.sublime-project
+*.sublime-workspace

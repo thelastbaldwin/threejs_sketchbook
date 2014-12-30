@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Mesh Distort</title>
+	<script src="js/third_party/three.min.js"></script>
+	<script src="js/third_party/stats.min.js"></script>
+	<script src="js/third_party/dat.gui.min.js"></script>
+	<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+	<div id="Stats-output"></div>
+	<div id="WebGL-output"></div>
+	<script>
+		// create a scene reminiscent of blender's default scene with cube, spotlight and camera
+
+		// parameter - default
+		// target - position — (0,0,0).
+		// intensity - 1.0
+		// distance - 0.0
+		// angle - Math.PI/3 (should be no more than Math.PI/2)
+		// exponent - 10.0
+		// shadowCameraNear - 50
+		// shadowCameraFar - 5000
+		// shadowCameraFov - 50
+
+		var scene = new THREE.Scene(),
+			renderer = new THREE.WebGLRenderer(),
+			clock = new THREE.Clock({autostart: true}),
+			testAxes = new THREE.AxisHelper(100),
+			camera = new THREE.PerspectiveCamera(45, window.innerWidth/ window.innerHeight, 0.1, 1000);
+			
+		camera.position.x = camera.position.y = camera.position.z = 200;
+		camera.lookAt(scene.position);
+		scene.add(camera);
+		
+		scene.add(testAxes);
+
+		var cubeGeometry = new THREE.BoxGeometry(30, 30, 30),
+			cubeMaterial = new THREE.MeshLambertMaterial({color: 0xeeeeee}),
+			cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+		cube.position.y = 15;
+		cube.castShadow = true;
+		scene.add(cube);
+
+		// var planeGeometry = new THREE.PlaneGeometry(1000, 1000, 100, 100);
+		// var planeMaterial = new THREE.MeshBasicMaterial({color: 0xEEEEEE, wireframe: true});
+		// var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+		// plane.rotation.x = Math.PI / 2;
+		// scene.add(plane);
+
+		var grid = new THREE.GridHelper(1000, 10);
+		grid.receiveShadow = true;
+		scene.add(grid);
+
+		renderer.setClearColor(0xAAAAAA);
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		renderer.shadowMapEnabled = true;
+		//append the renderer element to #WebGL-output
+		document.getElementById('WebGL-output').appendChild(renderer.domElement);
+
+		// var ambientLight = new THREE.AmbientLight(0xCCCCCC);
+		// scene.add(ambientLight);
+
+		var spotlight = new THREE.SpotLight(0xFFFFFF);
+		spotlight.position.set(0, 100, 100);
+		spotlight.castShadow = true;
+		spotlight.shadowCameraVisible = true;
+		scene.add(spotlight);
+
+		function renderScene(){
+			requestAnimationFrame(renderScene);
+			renderer.render(scene,camera);
+
+			spotlight.position.x = 100 * Math.sin(clock.getElapsedTime() * 0.75);
+			spotlight.position.z = 100 * Math.cos(clock.getElapsedTime() * 0.75);
+		}
+
+		renderScene();
+
+	</script>
+</body>

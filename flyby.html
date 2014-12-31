@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Blender Scene</title>
+	<title>FlyBy</title>
 	<script src="js/third_party/three.min.js"></script>
 	<script src="js/third_party/stats.min.js"></script>
 	<script src="js/third_party/dat.gui.min.js"></script>
-	<script src="js/third_party/OrbitControls.js"></script>
+	<script src="js/third_party/FlyControls.js"></script>
 	<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -14,7 +14,7 @@
 	<script>
 		// create a scene reminiscent of blender's default scene with cube, spotlight and camera
 
-		var gui = new dat.GUI();
+		// var gui = new dat.GUI();
 		var spotlightOptions = new function(){
 			this.radius = 100;
 			this.height = 100;
@@ -27,15 +27,15 @@
 			this.shadowCameraFov = 50;
 			this.shadowCameraVisible = true;
 		};
-		gui.add(spotlightOptions, 'radius', 100, 500);
-		gui.add(spotlightOptions, 'height', 100, 500);
-		gui.add(spotlightOptions, 'intensity', 0.0, 1.0);
-		gui.add(spotlightOptions, 'distance', 0, 1000);
-		gui.add(spotlightOptions, 'angle', Math.PI/3, Math.PI/2);
-		gui.add(spotlightOptions, 'shadowCameraNear', 5, 50);
-		gui.add(spotlightOptions, 'shadowCameraFar', 100, 5000);
-		gui.add(spotlightOptions, 'shadowCameraFov', 0, 100);
-		gui.add(spotlightOptions, 'shadowCameraVisible');
+		// gui.add(spotlightOptions, 'radius', 100, 500);
+		// gui.add(spotlightOptions, 'height', 100, 500);
+		// gui.add(spotlightOptions, 'intensity', 0.0, 1.0);
+		// gui.add(spotlightOptions, 'distance', 0, 1000);
+		// gui.add(spotlightOptions, 'angle', Math.PI/3, Math.PI/2);
+		// gui.add(spotlightOptions, 'shadowCameraNear', 5, 50);
+		// gui.add(spotlightOptions, 'shadowCameraFar', 100, 5000);
+		// gui.add(spotlightOptions, 'shadowCameraFov', 0, 100);
+		// gui.add(spotlightOptions, 'shadowCameraVisible');
 
 		var scene = new THREE.Scene(),
 			renderer = new THREE.WebGLRenderer(),
@@ -45,8 +45,6 @@
 		camera.position.x = camera.position.y = camera.position.z = 200;
 		camera.lookAt(scene.position);
 		
-		var orbitControls = new THREE.OrbitControls(camera);
-
 		scene.add(testAxes);
 
 		var cubeGeometry = new THREE.BoxGeometry(30, 30, 30),
@@ -74,6 +72,11 @@
 		var outputElement = document.getElementById('WebGL-output');
 		outputElement.appendChild(renderer.domElement);
 
+		var flyControls = new THREE.FlyControls(camera);
+		flyControls.movementSpeed = 100;
+		flyControls.rollSpeed = 0.30;
+		flyControls.domElement = outputElement;
+
 		// var ambientLight = new THREE.AmbientLight(0xCCCCCC);
 		// scene.add(ambientLight);
 
@@ -82,15 +85,17 @@
 		spotlight.castShadow = true;
 		scene.add(spotlight);
 
-		var spotLightHelper = new THREE.SpotLightHelper(spotlight, 10);
-		this.scene.add(spotLightHelper);
+		// var spotLightHelper = new THREE.SpotLightHelper(spotlight, 10);
+		// this.scene.add(spotLightHelper);
+
+		// var galaxyTexture = THREE.ImageUtils.loadTexture('img/spheremapgalaxyasteroid.png');
+		// cubeMaterial.map = galaxyTexture;
 
 		function renderScene(){
+			var delta = clock.getDelta();
 			requestAnimationFrame(renderScene);
-
-			orbitControls.update(clock.getDelta());
 			
-			spotLightHelper.update();
+			// spotLightHelper.update();
 
 			spotlight.position.y = spotlightOptions.height;
 			spotlight.position.x = spotlightOptions.radius * Math.sin(clock.getElapsedTime() * 0.75);
@@ -104,8 +109,9 @@
 			spotlight.shadowCameraFar = spotlightOptions.shadowCameraFar;
 			spotlight.shadowCameraFov = spotlightOptions.shadowCameraFov;
 
-			spotlight.shadowCameraVisible = spotlightOptions.shadowCameraVisible;
+			// spotlight.shadowCameraVisible = spotlightOptions.shadowCameraVisible;
 
+			flyControls.update(delta);
 			renderer.render(scene,camera);
 		}
 

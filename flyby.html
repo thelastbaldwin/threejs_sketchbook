@@ -9,11 +9,21 @@
 	<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+	<script id="terrain-vertex-shader" type="x-shader/x-vertex">
+		void main() {
+  			gl_Position = projectionMatrix *
+            modelViewMatrix *
+            vec4(position,1.0);
+		}
+	</script>
+	<script id="terrain-fragment-shader" type="x-shader/x-fragment">
+		void main(){
+			gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+		}
+	</script>
 	<div id="Stats-output"></div>
 	<div id="WebGL-output"></div>
 	<script>
-		// create a scene reminiscent of blender's default scene with cube, spotlight and camera
-
 		// var gui = new dat.GUI();
 		var spotlightOptions = new function(){
 			this.radius = 100;
@@ -54,20 +64,21 @@
 		cube.castShadow = true;
 		scene.add(cube);
 
-		// var planeGeometry = new THREE.PlaneGeometry(1000, 1000, 100, 100);
+		var planeGeometry = new THREE.PlaneGeometry(1000, 1000, 100, 100);
+		var planeShaderMaterial = new THREE.ShaderMaterial({
+			// uniforms: {},
+			vertexShader: document.getElementById('terrain-vertex-shader').textContent,
+			fragmentShader: document.getElementById('terrain-fragment-shader').textContent
+		});
+		console.log(planeShaderMaterial);
 		// var planeMaterial = new THREE.MeshBasicMaterial({color: 0xEEEEEE, wireframe: true});
-		// var plane = new THREE.Mesh(planeGeometry, planeMaterial);
-		// plane.rotation.x = Math.PI / 2;
-		// scene.add(plane);
-
-		var grid = new THREE.GridHelper(1000, 10);
-		grid.receiveShadow = true;
-		scene.add(grid);
+		var plane = new THREE.Mesh(planeGeometry, planeShaderMaterial);
+		plane.rotation.x = Math.PI / 2;
+		scene.add(plane);
 
 		renderer.setClearColor(0x333333);
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		renderer.shadowMapEnabled = true;
-		//append the renderer element to #WebGL-output
 
 		var outputElement = document.getElementById('WebGL-output');
 		outputElement.appendChild(renderer.domElement);
@@ -87,9 +98,6 @@
 
 		// var spotLightHelper = new THREE.SpotLightHelper(spotlight, 10);
 		// this.scene.add(spotLightHelper);
-
-		// var galaxyTexture = THREE.ImageUtils.loadTexture('img/spheremapgalaxyasteroid.png');
-		// cubeMaterial.map = galaxyTexture;
 
 		function renderScene(){
 			var delta = clock.getDelta();

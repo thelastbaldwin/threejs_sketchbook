@@ -37,7 +37,7 @@
 		redText,
 		spotlight,
 		scene,
-		speed = 0.1,
+		speed = 0.2,
 		height = 400,
 		width = 80;
 
@@ -73,7 +73,7 @@
 			parent.add(spotlight);
 
 			var planeSize = 2560, planeGeometry, planeMaterial, plane;
-			var planeTexture = THREE.ImageUtils.loadTexture('../img/zella_pattern_256.jpg', undefined, function(){
+			var planeTexture = THREE.ImageUtils.loadTexture('../img/zella_pattern_256_grayscale.jpg', undefined, function(){
 				planeTexture.wrapT = planeTexture.wrapS = THREE.RepeatWrapping;
 				planeTexture.repeat.set(10, 10);
 				planeTexture.offset.y = 0.1;
@@ -136,7 +136,7 @@
 			var rotation,
 			rTranslation,
 			gTranslation,
-			radius = 300;
+			radius = 400;
 			for(var i = 0; i < 4; i++){
 				greenTexts[i].castShadow = true;
 				redTexts[i].castShadow = true;

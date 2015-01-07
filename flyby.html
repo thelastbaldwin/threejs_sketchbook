@@ -18,7 +18,7 @@
 	</script>
 	<script id="terrain-fragment-shader" type="x-shader/x-fragment">
 		void main(){
-			gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+			gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
 		}
 	</script>
 	<div id="Stats-output"></div>
@@ -68,7 +68,8 @@
 		var planeShaderMaterial = new THREE.ShaderMaterial({
 			// uniforms: {},
 			vertexShader: document.getElementById('terrain-vertex-shader').textContent,
-			fragmentShader: document.getElementById('terrain-fragment-shader').textContent
+			fragmentShader: document.getElementById('terrain-fragment-shader').textContent,
+			wireframe: true
 		});
 		console.log(planeShaderMaterial);
 		// var planeMaterial = new THREE.MeshBasicMaterial({color: 0xEEEEEE, wireframe: true});

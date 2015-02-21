@@ -19,10 +19,10 @@
 	<script>
 		$(function(){
 			var controls = new function(){
-				this.innerColor = 0xff0000;
-				this.outerColor = 0xffff00;
-				this.pixelSize = 10;
-				this.staticAmount = 0.05;
+				this.innerColor = 0xffffff;
+				this.outerColor = 0x000000;
+				this.pixelSize = 5;
+				this.staticAmount = 0.15;
 			};
 
 			var gui = new dat.GUI();
@@ -102,7 +102,7 @@
 
 				staticShaderPass.uniforms.size.value = controls.pixelSize;
 				staticShaderPass.uniforms.amount.value = controls.staticAmount;
-				staticShaderPass.uniforms.time.value = clock.getElapsedTime();
+				staticShaderPass.uniforms.time.value = clock.getElapsedTime()/1000;
 
 				composer.render(clock.getDelta());
 			}

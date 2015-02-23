@@ -109,8 +109,7 @@
 			videoTexture.magFilter = THREE.LinearFilter;
 			videoTexture.generateMipMaps = false;
 
-			console.log(window.innerWidth, window.innerHeight);
-			var planeGeometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight, 200, 200);
+			var planeGeometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight, 100, 100);
 			var planeMaterial = new THREE.ShaderMaterial({
 				uniforms:{
 					videoTexture: {

@@ -102,7 +102,7 @@
 
 				staticShaderPass.uniforms.size.value = controls.pixelSize;
 				staticShaderPass.uniforms.amount.value = controls.staticAmount;
-				staticShaderPass.uniforms.time.value = clock.getElapsedTime()/1000;
+				staticShaderPass.uniforms.time.value = clock.getElapsedTime();
 
 				composer.render(clock.getDelta());
 			}

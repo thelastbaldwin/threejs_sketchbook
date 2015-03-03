@@ -17,7 +17,7 @@
 		var gui = new dat.GUI();
 		var spotlightOptions = new function(){
 			this.z = 500;
-			this.height = 100;
+			this.height = 250;
 			this.intensity = 1.0;
 			this.distance = 0;
 			this.angle = Math.PI/3;
@@ -39,39 +39,46 @@
 		camera.lookAt(scene.position);
 
 		// var orbitControls = new THREE.OrbitControls(camera);
-		
-		// scene.add(testAxes);
 
-		// PlaneGeometry(width, height, widthSegments, heightSegments)
-		var planeGeometry = new THREE.PlaneBufferGeometry(1000, 1000, 100, 100);
-		var positions = planeGeometry.attributes.position.array;
 		var offset;
-		for(var i = 2; i < positions.length; i+=3){
+		var color = new THREE.Color();
+		// PlaneGeometry(width, height, widthSegments, heightSegments)
+		// can't use buffer geometry without giving up thicker lines
+		// var planeGeometry = new THREE.PlaneBufferGeometry(2000, 1000, 200, 100);
+		// var positions = planeGeometry.attributes.position.array;
+		// for(var i = 2; i < positions.length; i+=3){
+		// 	offset = noise.perlin3(i-2/10, i-1/10, i/10);
+		// 	positions[i] += offset * 12;
+		// }
+		var planeGeometry = new THREE.PlaneGeometry(2000, 1000, 100, 50);
+		var positions = planeGeometry.vertices;
+		for(var i = 0; i < positions.length; i++){
 			offset = noise.perlin3(i-2/10, i-1/10, i/10);
-			positions[i] = positions[i]+ offset * 10;
+			positions[i].z = positions[i].z + offset * 12;
 		}
+		
+		planeGeometry.computeFaceNormals();
 		planeGeometry.computeVertexNormals();
 
-		// var planeMaterial = new THREE.MeshLambertMaterial({color: 0xCCCCCC});
-
 		var planePhongMaterial = new THREE.MeshPhongMaterial({ 
-			ambient: 0xfffff, 
-			color: 0x0000ff, 
-			specular: 0xac4848, 
-			shininess: 50, 
+			color: 0xD324FF, 
+			specular: 0x0000fa, 
+			shininess: 100, 
 			shading: THREE.FlatShading
 		});
 		var planeWireframeMaterial = new THREE.MeshPhongMaterial({
-			color: 0xcccccc,
-			specular: 0xffffff,
+			color: 0xffffff,
+			specular: 0xfa0000,
 			shininess: 100,
-			wireframeLinewidth: 3,
 			wireframe: true,
+			wireframeLinewidth: 3
 		});
+
 		var plane = THREE.SceneUtils.createMultiMaterialObject(planeGeometry, [	
 			planePhongMaterial,
 			planeWireframeMaterial
 		]);
+
 		plane.rotation.x = -Math.PI/2;
 
 		scene.add(plane);
@@ -79,22 +86,18 @@
 		renderer.setClearColor(0xcccccc);
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		renderer.shadowMapEnabled = true;
-		//append the renderer element to #WebGL-output
 
 		var outputElement = document.getElementById('WebGL-output');
 		outputElement.appendChild(renderer.domElement);
 
-		// var ambientLight = new THREE.AmbientLight(0xff0000);
-		// scene.add(ambientLight);
-
-		var spotlight = new THREE.SpotLight(0xFFF9B3);
+		var spotLightColor = 0xFFF9B3;
+		var spotlight = new THREE.SpotLight(spotLightColor);
 		spotlight.position.set(0, 100, -200);
 		spotlight.castShadow = true;
 		scene.add(spotlight);
 
 		var sunMaterial = new THREE.MeshBasicMaterial({
-			color: 0xFFF9B3
-			// wireframe: true
+			color: spotLightColor
 		});
 		var sunGeometry= new THREE.CircleGeometry(100, 32);
 		var sunCircle = new THREE.Mesh(sunGeometry, sunMaterial);
@@ -104,12 +107,39 @@
 		// var spotLightHelper = new THREE.SpotLightHelper(spotlight, 10);
 		// this.scene.add(spotLightHelper);
 
+		var testMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
+		var sphereMesh  = new THREE.SphereGeometry(10, 16, 16);
+		var spotLightParent = new THREE.Object3D();
+		var pointLights = [
+			new THREE.PointLight(0xa30000, 0.5),
+			new THREE.PointLight(0x00a300, 0.5),
+			new THREE.PointLight(0x0000a3, 0.5)
+		];
+		var pointLightHelpers = [
+			new THREE.Mesh(sphereMesh, testMaterial),
+			new THREE.Mesh(sphereMesh, testMaterial),
+			new THREE.Mesh(sphereMesh, testMaterial)
+		];
+		var radius = 300;
+		for(var i = 0; i < pointLights.length; i++){
+			pointLights[i].position.set(Math.sin(i * (2*Math.PI/3)) * radius, 100, Math.cos(i * (2*Math.PI/3)) * radius);
+			pointLightHelpers[i].position.set(Math.sin(i * (2*Math.PI/3)) * radius, 100, Math.cos(i * (2*Math.PI/3)) * radius);
+		}
+		spotLightParent.add(pointLights[0]);
+		spotLightParent.add(pointLights[1]);
+		spotLightParent.add(pointLights[2]);
+		spotLightParent.add(pointLightHelpers[0]);
+		spotLightParent.add(pointLightHelpers[1]);
+		spotLightParent.add(pointLightHelpers[2]);
+		scene.add(spotLightParent);
+
 		function renderScene(){
 			// pointLight.position.
 			// spotLightHelper.update();
 
 			// orbitControls.update(clock.getDelta());
 			// spotLightHelper.update();
+			spotLightParent.rotation.y += 0.01;
 
 			sunCircle.position.y = spotlight.position.y = spotlightOptions.height;
 			sunCircle.position.z = spotlight.position.z = spotlightOptions.z;

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Sun Gradient</title>
+	<script src="js/third_party/three.min.js"></script>
+	<script src="js/third_party/jquery-2.1.1.min.js"></script>
+	<script src="js/third_party/stats.min.js"></script>
+	<script src="js/third_party/dat.gui.min.js"></script>
+	<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+	<div id="Stats-output"></div>
+	<div id="WebGL-output"></div>
+	<script>
+		function initStats(){
+			var stats = new Stats();
+			stats.setMode(0);
+			stats.domElement.style.position = 'absolute',
+			stats.domElement.style.left = '0px';
+			stats.domElement.style.top = '0px';
+			$('#Stats-output').append(stats.domElement);
+			return stats;
+		}
+
+
+		$(function(){
+			var stats = initStats();
+			var scene = new THREE.Scene();
+
+			var quadGeometry = new THREE.PlaneBufferGeometry( window.innerWidth, window.innerHeight, 1, 1 );
+			var quadMaterial = new THREE.ShaderMaterial({
+				uniforms: {
+					height: { 
+						type: 'f', 
+						value: window.innerHeight/2.0
+					}
+				},
+				vertexShader: [
+					'void main() {',
+			  			'gl_Position = projectionMatrix *',
+			            'modelViewMatrix *',
+			            'vec4(position,1.0);',
+					'}'
+				].join('\n'),
+				fragmentShader: [
+					'uniform float height;',
+					'void main() {',
+						'gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);',
+					'}'
+				].join('\n')
+			});
+			var quad = new THREE.Mesh(quadGeometry, quadMaterial);
+			scene.add(quad);
+			var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 1, 1000 );
+
+			scene.add(camera);
+
+			camera.position.x = 0;
+			camera.position.y =	0;
+			camera.position.z = 100;
+			camera.lookAt(scene.position);
+
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+
+			$('#WebGL-output').append(renderer.domElement);
+			renderScene();
+
+			function renderScene(){
+				requestAnimationFrame(renderScene);
+				stats.update();
+				renderer.render(scene, camera);
+
+			}
+		});
+	</script>
+</body>
+</html>

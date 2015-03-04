@@ -12,6 +12,17 @@
 	<div id="Stats-output"></div>
 	<div id="WebGL-output"></div>
 	<script>
+		var controls = new function(){
+			this.height = window.innerHeight/2,
+			this.threshold = 5;
+			this.falloff = 10;
+		}
+
+		var gui = new dat.GUI();
+		gui.add(controls, 'height', 0, window.innerHeight);
+		gui.add(controls, 'threshold', 0, 10);
+		gui.add(controls, 'falloff', 0, 50);
+
 		function initStats(){
 			var stats = new Stats();
 			stats.setMode(0);
@@ -33,6 +44,14 @@
 					height: { 
 						type: 'f', 
 						value: window.innerHeight/2.0
+					},
+					threshold: {
+						type: 'f',
+						value: 5
+					},
+					falloff: {
+						type: 'f',
+						value: 10
 					}
 				},
 				vertexShader: [
@@ -43,9 +62,13 @@
 					'}'
 				].join('\n'),
 				fragmentShader: [
-					'uniform float height;',
+					'uniform float height, threshold, falloff;',
 					'void main() {',
-						'gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);',
+						'if(gl_PointCoord.y <= height + threshold || gl_PointCoord.y >= height - threshold){',
+							'gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);',
+						'}else{',
+							'gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);',
+						'}',
 					'}'
 				].join('\n')
 			});
@@ -69,6 +92,11 @@
 			function renderScene(){
 				requestAnimationFrame(renderScene);
 				stats.update();
+
+				quadMaterial.uniforms.height.value = controls.height;
+				quadMaterial.uniforms.threshold.value = controls.threshold;
+				quadMaterial.uniforms.falloff.value = controls.falloff;
+
 				renderer.render(scene, camera);
 
 			}

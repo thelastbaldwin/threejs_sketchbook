@@ -20,6 +20,7 @@
 		var outputElement,
 			stats,
 			camera, 
+			clock,
 			scene, 
 			renderer, 
 			flyControls, 
@@ -28,19 +29,19 @@
 			composer,
 			parent,
 			fg,
+			gui,
+			mouseRotationFactor = 1.0,
 			controls = new function(){
-				this.size = 8.0;
-				this.rotationSpeed = .00006;
+				this.size = 3.0;
+				this.rotationSpeed = 0.1;
 				this.enableFlying = false;
-				this.brightnessMin = 0.1;
-				this.brightnessMax = 0.3;
-				this.brightnessSpeed = 0.001;
 			}
 
 
 
 			function init() {
 				clock = new THREE.Clock();
+				clock.start();
 				outputElement = document.getElementById('WebGL-output');
 
 				//
@@ -115,23 +116,18 @@
 					fragmentShader: [
 						"varying float particleSize;",
 						"varying vec4 vColor;",
-						"uniform float brightness;",
 
 						"void main() {",
 							"vec2 circleCenter = vec2(0.5, 0.5);",
 							"float distFromCenter = distance(vec2(gl_PointCoord.x, gl_PointCoord.y), circleCenter);",
 							"if(distFromCenter < 0.5){",
-								"gl_FragColor = vColor * brightness/distFromCenter;",
-								"gl_FragColor.a = 1.0/(distFromCenter * 25.0);",
+								"gl_FragColor = vColor;",
 							"}else{",
 								"discard;",
 							"}",
 						"}"
 					].join('\n')
 				});
-
-				// var material = new THREE.PointCloudMaterial( { size: 16, vertexColors: THREE.VertexColors} );
-
 				particleSystem = new THREE.PointCloud( geometry, starMaterial );
 				scene.add( particleSystem );
 
@@ -157,12 +153,9 @@
 				stats.domElement.style.top = '0px';
 				outputElement.appendChild( stats.domElement );
 
-				var gui = new dat.GUI();
+				gui = new dat.GUI();
 				gui.add(controls, 'size', 1, 32);
-				gui.add(controls, 'rotationSpeed', .00001, .001);
-				gui.add(controls, 'brightnessMin', 0.1, 0.9);
-				gui.add(controls, 'brightnessMax', 0.3, 0.9);
-				gui.add(controls, 'brightnessSpeed', 0.001, .01);
+				gui.add(controls, 'rotationSpeed', .005, 1.0);
 
 				//
 				// flyControls = new THREE.FlyControls(parent);
@@ -180,19 +173,22 @@
 			}
 
 			function render() {
-				var time = Date.now();
+				var time = clock.getElapsedTime();
 				//constrain between .03 and 0
-				parent.children[1].material.opacity = .04 - Math.sin(time * .0004) * .01;
-				// console.log(fg.material.opacity);
+				parent.children[1].material.opacity = .04 - Math.sin(time) * .01;
 
-				particleSystem.rotation.y = time * controls.rotationSpeed;
-				particleSystem.material.uniforms.brightness.value = controls.brightnessMax/2 + controls.brightnessMin - Math.sin(time * controls.brightnessSpeed) * controls.brightnessMax/2;
+				particleSystem.rotation.y = time * controls.rotationSpeed + mouseRotationFactor;
 				particleSystem.material.uniforms.size.value = controls.size;
+				// particleSystem.rotation.y = mouseRotationFactor;
 
 				// flyControls.update(clock.getDelta());
 				renderer.render(scene, camera);
 			}
 
+			document.addEventListener('mousemove', function(event){
+				mouseRotationFactor += .005;
+				console.log(mouseRotationFactor);
+			});
 
 
 			init();

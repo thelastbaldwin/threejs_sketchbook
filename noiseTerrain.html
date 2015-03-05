@@ -3,6 +3,11 @@
 <head>
 	<title>Noise Terrain</title>
 	<script src="js/third_party/three.min.js"></script>
+	<script src="js/third_party/EffectComposer.js"></script>
+	<script src="js/third_party/CopyShader.js"></script>
+	<script src="js/third_party/ShaderPass.js"></script>
+	<script src="js/third_party/MaskPass.js"></script>
+	<script src="js/third_party/RenderPass.js"></script>
 	<script src="js/third_party/stats.min.js"></script>
 	<script src="js/third_party/dat.gui.min.js"></script>
 	<script src="js/third_party/OrbitControls.js"></script>
@@ -29,27 +34,32 @@
 		gui.add(spotlightOptions, 'distance', 0, 1000);
 		gui.add(spotlightOptions, 'angle', Math.PI/3, Math.PI/2);
 
+		//background stuff
+		var bgScene = new THREE.Scene();
+		var bgCamera = new THREE.OrthographicCamera( -window.innerWidth, window.innerWidth, window.innerHeight, -window.innerHeight, 1, 1000 );
+		bgCamera.position.z = 100;
+		var bgMaterial = new THREE.MeshBasicMaterial({
+			map: THREE.ImageUtils.loadTexture('img/stars.png'),
+			depthTest: false
+		});
+		var bgPlane = new THREE.Mesh(
+			new THREE.PlaneBufferGeometry(window.innerWidth * 2, window.innerHeight * 2),
+			bgMaterial
+		);
+		bgScene.add(bgPlane);
+
+		//main terrain stuff
 		var scene = new THREE.Scene(),
 			renderer = new THREE.WebGLRenderer(),
-			// testAxes = new THREE.AxisHelper(100),
 			clock = new THREE.Clock(),
 			camera = new THREE.PerspectiveCamera(45, window.innerWidth/ window.innerHeight, 0.1, 1000);
 		camera.position.z = -500;
 		camera.position.y = 50;
 		camera.lookAt(scene.position);
-
-		// var orbitControls = new THREE.OrbitControls(camera);
+		var orbitControls = new THREE.OrbitControls(camera);
 
 		var offset;
 		var color = new THREE.Color();
-		// PlaneGeometry(width, height, widthSegments, heightSegments)
-		// can't use buffer geometry without giving up thicker lines
-		// var planeGeometry = new THREE.PlaneBufferGeometry(2000, 1000, 200, 100);
-		// var positions = planeGeometry.attributes.position.array;
-		// for(var i = 2; i < positions.length; i+=3){
-		// 	offset = noise.perlin3(i-2/10, i-1/10, i/10);
-		// 	positions[i] += offset * 12;
-		// }
 		var planeGeometry = new THREE.PlaneGeometry(2000, 1000, 100, 50);
 		var positions = planeGeometry.vertices;
 		for(var i = 0; i < positions.length; i++){
@@ -74,7 +84,7 @@
 			wireframeLinewidth: 3
 		});
 
-		var plane = THREE.SceneUtils.createMultiMaterialObject(planeGeometry, [	
+		var plane = THREE.SceneUtils.createMultiMaterialObject(planeGeometry, [
 			planePhongMaterial,
 			planeWireframeMaterial
 		]);
@@ -83,7 +93,6 @@
 
 		scene.add(plane);
 
-		renderer.setClearColor(0xcccccc);
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		renderer.shadowMapEnabled = true;
 
@@ -103,9 +112,6 @@
 		var sunCircle = new THREE.Mesh(sunGeometry, sunMaterial);
 		sunCircle.rotation.y = Math.PI;
 		scene.add(sunCircle);
-
-		// var spotLightHelper = new THREE.SpotLightHelper(spotlight, 10);
-		// this.scene.add(spotLightHelper);
 
 		var testMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
 		var sphereMesh  = new THREE.SphereGeometry(10, 16, 16);
@@ -128,16 +134,27 @@
 		spotLightParent.add(pointLights[0]);
 		spotLightParent.add(pointLights[1]);
 		spotLightParent.add(pointLights[2]);
-		spotLightParent.add(pointLightHelpers[0]);
-		spotLightParent.add(pointLightHelpers[1]);
-		spotLightParent.add(pointLightHelpers[2]);
+		// spotLightParent.add(pointLightHelpers[0]);
+		// spotLightParent.add(pointLightHelpers[1]);
+		// spotLightParent.add(pointLightHelpers[2]);
 		scene.add(spotLightParent);
+
+		//set up composer
+		var bgPass = new THREE.RenderPass(bgScene, bgCamera);
+		var renderPass = new THREE.RenderPass(scene, camera);
+		renderPass.clear = false;
+		var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
+		effectCopy.renderToScreen = true;
+		var composer = new THREE.EffectComposer(renderer);
+		composer.addPass(bgPass);
+		composer.addPass(renderPass);
+		composer.addPass(effectCopy);
 
 		function renderScene(){
 			// pointLight.position.
 			// spotLightHelper.update();
 
-			// orbitControls.update(clock.getDelta());
+			orbitControls.update(clock.getDelta());
 			// spotLightHelper.update();
 			spotLightParent.rotation.y += 0.01;
 
@@ -152,8 +169,14 @@
 			spotlight.shadowCameraFar = spotlightOptions.shadowCameraFar;
 			spotlight.shadowCameraFov = spotlightOptions.shadowCameraFov;
 
+			// renderer.render(scene,camera);
+			// renderer.render(bgScene,bgCamera);
+
+			//composite rendering
+			renderer.autoClear = false;
+			composer.render();
+
 			requestAnimationFrame(renderScene);
-			renderer.render(scene,camera);
 		}
 
 		renderScene();

@@ -92,8 +92,6 @@
 				geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
 				geometry.computeBoundingSphere();
 
-				//
-
 				var starMaterial = new THREE.ShaderMaterial({
 					uniforms: {
 						size: {type: 'f', value: 8.0},
@@ -131,8 +129,6 @@
 				particleSystem = new THREE.PointCloud( geometry, starMaterial );
 				scene.add( particleSystem );
 
-				//
-
 				fg = new THREE.Mesh(new THREE.PlaneBufferGeometry(1000, 1000, 1, 1), new THREE.MeshBasicMaterial({transparent:true, opacity:.02, color: 0x000000}));
 				fg.position.z = camera.position.z - 5;
 				parent.add(fg);
@@ -146,8 +142,6 @@
 
 				outputElement.appendChild( renderer.domElement );
 
-				//
-
 				stats = new Stats();
 				stats.domElement.style.position = 'absolute';
 				stats.domElement.style.top = '0px';
@@ -156,12 +150,6 @@
 				gui = new dat.GUI();
 				gui.add(controls, 'size', 1, 32);
 				gui.add(controls, 'rotationSpeed', .005, 1.0);
-
-				//
-				// flyControls = new THREE.FlyControls(parent);
-				// flyControls.movementSpeed =100;
-				// flyControls.rollSpeed = 0.15;
-				// flyControls.domElement = outputElement;
 			}
 			
 			
@@ -179,9 +167,6 @@
 
 				particleSystem.rotation.y = time * controls.rotationSpeed + mouseRotationFactor;
 				particleSystem.material.uniforms.size.value = controls.size;
-				// particleSystem.rotation.y = mouseRotationFactor;
-
-				// flyControls.update(clock.getDelta());
 				renderer.render(scene, camera);
 			}
 

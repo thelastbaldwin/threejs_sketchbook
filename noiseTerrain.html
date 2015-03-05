@@ -29,7 +29,7 @@
 			this.exponent = 10.0;
 		};
 		gui.add(spotlightOptions, 'z', 100, 500);
-		gui.add(spotlightOptions, 'height', -200, 500);
+		gui.add(spotlightOptions, 'height', -200, 300);
 		gui.add(spotlightOptions, 'intensity', 0.0, 1.0);
 		gui.add(spotlightOptions, 'distance', 0, 1000);
 		gui.add(spotlightOptions, 'angle', Math.PI/3, Math.PI/2);
@@ -38,10 +38,45 @@
 		var bgScene = new THREE.Scene();
 		var bgCamera = new THREE.OrthographicCamera( -window.innerWidth, window.innerWidth, window.innerHeight, -window.innerHeight, 1, 1000 );
 		bgCamera.position.z = 100;
-		var bgMaterial = new THREE.MeshBasicMaterial({
-			map: THREE.ImageUtils.loadTexture('img/stars.png'),
-			depthTest: false
-		});
+		var bgMaterial = new THREE.ShaderMaterial({
+ 				uniforms: {
+ 					windowHeight: {
+ 						type: 'f',
+ 						value: window.innerHeight
+ 					},
+ 					mousePoint: {
+ 						type: 'f',
+ 						value: window.innerHeight/2.0
+ 					},
+ 					starsTexture: {
+ 						type: 't',
+ 						value: THREE.ImageUtils.loadTexture( 'img/stars.png' )
+ 					},
+ 					amount: {
+ 						type: "f",
+ 						value: 1.0
+ 					}
+ 				},
+ 				depthTest: false,
+ 				vertexShader: [
+ 					'varying vec2 vUv;',
+					'void main() {',
+						'vUv = uv;',
+			  			'gl_Position = projectionMatrix *',
+			            'modelViewMatrix *',
+			            'vec4(position,1.0);',
+					'}'
+				].join('\n'),
+ 				fragmentShader: [
+ 					'uniform float windowHeight, mousePoint, amount;',
+ 					'uniform sampler2D starsTexture;',
+ 					'varying vec2 vUv;',
+					'void main() {',
+						'vec3 backgroundColor = texture2D(starsTexture, vUv).rgb;',
+						'gl_FragColor = vec4(mix(vec3(0.45, 0.78, 1.0), backgroundColor, clamp(gl_FragCoord.y/mousePoint, 0.0, 1.0)), 1.0);',
+					'}'
+				].join('\n')
+ 			});
 		var bgPlane = new THREE.Mesh(
 			new THREE.PlaneBufferGeometry(window.innerWidth * 2, window.innerHeight * 2),
 			bgMaterial
@@ -56,7 +91,7 @@
 		camera.position.z = -500;
 		camera.position.y = 50;
 		camera.lookAt(scene.position);
-		var orbitControls = new THREE.OrbitControls(camera);
+		// var orbitControls = new THREE.OrbitControls(camera);
 
 		var offset;
 		var color = new THREE.Color();
@@ -72,14 +107,14 @@
 
 		var planePhongMaterial = new THREE.MeshPhongMaterial({ 
 			color: 0xD324FF, 
-			specular: 0x0000fa, 
+			specular: 0x0000ff, 
 			shininess: 100, 
 			shading: THREE.FlatShading
 		});
 		var planeWireframeMaterial = new THREE.MeshPhongMaterial({
-			color: 0xffffff,
-			specular: 0xfa0000,
-			shininess: 100,
+			color: 0x333333,
+			specular: 0xfffffff,
+			shininess: 30,
 			wireframe: true,
 			wireframeLinewidth: 3
 		});
@@ -99,7 +134,7 @@
 		var outputElement = document.getElementById('WebGL-output');
 		outputElement.appendChild(renderer.domElement);
 
-		var spotLightColor = 0xFFF9B3;
+		var spotLightColor = 0xFFFEF0;
 		var spotlight = new THREE.SpotLight(spotLightColor);
 		spotlight.position.set(0, 100, -200);
 		spotlight.castShadow = true;
@@ -108,12 +143,13 @@
 		var sunMaterial = new THREE.MeshBasicMaterial({
 			color: spotLightColor
 		});
-		var sunGeometry= new THREE.CircleGeometry(100, 32);
+		var sunGeometry= new THREE.CircleGeometry(50, 32);
 		var sunCircle = new THREE.Mesh(sunGeometry, sunMaterial);
+		sunCircle.position.z = 500;
 		sunCircle.rotation.y = Math.PI;
 		scene.add(sunCircle);
 
-		var testMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
+		var spotLightMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
 		var sphereMesh  = new THREE.SphereGeometry(10, 16, 16);
 		var spotLightParent = new THREE.Object3D();
 		var pointLights = [
@@ -122,9 +158,9 @@
 			new THREE.PointLight(0x0000a3, 0.5)
 		];
 		var pointLightHelpers = [
-			new THREE.Mesh(sphereMesh, testMaterial),
-			new THREE.Mesh(sphereMesh, testMaterial),
-			new THREE.Mesh(sphereMesh, testMaterial)
+			new THREE.Mesh(sphereMesh, spotLightMaterial),
+			new THREE.Mesh(sphereMesh, spotLightMaterial),
+			new THREE.Mesh(sphereMesh, spotLightMaterial)
 		];
 		var radius = 300;
 		for(var i = 0; i < pointLights.length; i++){
@@ -154,20 +190,17 @@
 			// pointLight.position.
 			// spotLightHelper.update();
 
-			orbitControls.update(clock.getDelta());
+			// orbitControls.update(clock.getDelta());
 			// spotLightHelper.update();
 			spotLightParent.rotation.y += 0.01;
 
-			sunCircle.position.y = spotlight.position.y = spotlightOptions.height;
-			sunCircle.position.z = spotlight.position.z = spotlightOptions.z;
+			sunCircle.position.y = spotlightOptions.height;
+			spotlight.position.y = spotlightOptions.height *1.8;
+			bgMaterial.uniforms.mousePoint.value = spotlightOptions.height + 2.0* window.innerHeight/2;
 
 			spotlight.intensity = spotlightOptions.intensity;
 			spotlight.distance = spotlightOptions.distance;
 			spotlight.angle = spotlightOptions.angle;
-			spotlight.exponent = spotlightOptions.exponent;
-			spotlight.shadowCameraNear = spotlightOptions.shadowCameraNear;
-			spotlight.shadowCameraFar = spotlightOptions.shadowCameraFar;
-			spotlight.shadowCameraFov = spotlightOptions.shadowCameraFov;
 
 			// renderer.render(scene,camera);
 			// renderer.render(bgScene,bgCamera);
@@ -178,6 +211,11 @@
 
 			requestAnimationFrame(renderScene);
 		}
+
+		document.addEventListener('mousemove', function(e){
+			// bgMaterial.uniforms.mousePoint.value = window.innerHeight-e.y;
+		});
+
 
 		renderScene();
 

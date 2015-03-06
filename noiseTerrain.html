@@ -29,7 +29,7 @@
 			this.exponent = 10.0;
 		};
 		gui.add(spotlightOptions, 'z', 100, 500);
-		gui.add(spotlightOptions, 'height', -200, 300);
+		gui.add(spotlightOptions, 'height', -250, 250);
 		gui.add(spotlightOptions, 'intensity', 0.0, 1.0);
 		gui.add(spotlightOptions, 'distance', 0, 1000);
 		gui.add(spotlightOptions, 'angle', Math.PI/3, Math.PI/2);
@@ -40,10 +40,6 @@
 		bgCamera.position.z = 100;
 		var bgMaterial = new THREE.ShaderMaterial({
  				uniforms: {
- 					windowHeight: {
- 						type: 'f',
- 						value: window.innerHeight
- 					},
  					mousePoint: {
  						type: 'f',
  						value: window.innerHeight/2.0
@@ -51,10 +47,6 @@
  					starsTexture: {
  						type: 't',
  						value: THREE.ImageUtils.loadTexture( 'img/stars.png')
- 					},
- 					amount: {
- 						type: "f",
- 						value: 1.0
  					}
  				},
  				depthTest: false,
@@ -68,7 +60,7 @@
 					'}'
 				].join('\n'),
  				fragmentShader: [
- 					'uniform float windowHeight, mousePoint, amount;',
+ 					'uniform float mousePoint;',
  					'uniform sampler2D starsTexture;',
  					'varying vec2 vUv;',
 					'void main() {',
@@ -87,7 +79,7 @@
 		var scene = new THREE.Scene(),
 			renderer = new THREE.WebGLRenderer(),
 			clock = new THREE.Clock(),
-			camera = new THREE.PerspectiveCamera(45, window.innerWidth/ window.innerHeight, 0.1, 1000);
+			camera = new THREE.PerspectiveCamera(45, window.innerWidth/ window.innerHeight, 0.1, 1200);
 		camera.position.z = -500;
 		camera.position.y = 50;
 		camera.lookAt(scene.position);
@@ -118,14 +110,19 @@
 		spotlight.castShadow = true;
 		scene.add(spotlight);
 
-		var sunMaterial = new THREE.MeshBasicMaterial({
-			color: spotLightColor
+		var sunMaterial = new THREE.MeshLambertMaterial({
+			color: 0xffff00,
+			shading: THREE.FlatShading
 		});
-		var sunGeometry= new THREE.CircleGeometry(50, 32);
-		var sunCircle = new THREE.Mesh(sunGeometry, sunMaterial);
-		sunCircle.position.z = 500;
-		sunCircle.rotation.y = Math.PI;
-		scene.add(sunCircle);
+		sunMaterial.emissive = new THREE.Color(0xFFA600);
+		var sunGeometry= new THREE.SphereGeometry(50, 8, 8);
+		var sunsphere = new THREE.Mesh(sunGeometry, sunMaterial);
+		sunsphere.position.z = 500;
+		sunsphere.rotation.y = Math.PI;
+		scene.add(sunsphere);
+		var sunLight = new THREE.PointLight(0xffcccc, 1.0);
+		
+		scene.add(sunLight);
 
 		var spotLightMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
 		var sphereMesh  = new THREE.SphereGeometry(10, 16, 16);
@@ -172,9 +169,13 @@
 			// spotLightHelper.update();
 			spotLightParent.rotation.y += 0.01;
 
-			sunCircle.position.y = spotlightOptions.height;
+			sunsphere.position.y = spotlightOptions.height;
+			sunsphere.rotation.y += 0.01;
+			sunLight.position.set(sunsphere.position.x - 50, sunsphere.position.y + 200, sunsphere.position.z-150);
+
 			spotlight.position.y = spotlightOptions.height *1.8;
-			bgMaterial.uniforms.mousePoint.value = spotlightOptions.height + 2.0* window.innerHeight/2;
+			// bgMaterial.uniforms.mousePoint.value = window.innerHeight * 10;
+			bgMaterial.uniforms.mousePoint.value = Math.min(Math.max(spotlightOptions.height * 10, 1.0), window.innerHeight * 10);
 
 			spotlight.intensity = spotlightOptions.intensity;
 			spotlight.distance = spotlightOptions.distance;
@@ -199,11 +200,6 @@
 
 			requestAnimationFrame(renderScene);
 		}
-
-		document.addEventListener('mousemove', function(e){
-			// bgMaterial.uniforms.mousePoint.value = window.innerHeight-e.y;
-		});
-
 
 		renderScene();
 

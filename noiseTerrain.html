@@ -50,7 +50,7 @@
  					},
  					starsTexture: {
  						type: 't',
- 						value: THREE.ImageUtils.loadTexture( 'img/stars.png' )
+ 						value: THREE.ImageUtils.loadTexture( 'img/stars.png')
  					},
  					amount: {
  						type: "f",
@@ -93,37 +93,15 @@
 		camera.lookAt(scene.position);
 		// var orbitControls = new THREE.OrbitControls(camera);
 
-		var offset;
-		var color = new THREE.Color();
 		var planeGeometry = new THREE.PlaneGeometry(2000, 1000, 100, 50);
-		var positions = planeGeometry.vertices;
-		for(var i = 0; i < positions.length; i++){
-			offset = noise.perlin3(i-2/10, i-1/10, i/10);
-			positions[i].z = positions[i].z + offset * 12;
-		}
-		
-		planeGeometry.computeFaceNormals();
-		planeGeometry.computeVertexNormals();
-
 		var planePhongMaterial = new THREE.MeshPhongMaterial({ 
 			color: 0xD324FF, 
 			specular: 0x0000ff, 
 			shininess: 100, 
 			shading: THREE.FlatShading
 		});
-		var planeWireframeMaterial = new THREE.MeshPhongMaterial({
-			color: 0x333333,
-			specular: 0xfffffff,
-			shininess: 30,
-			wireframe: true,
-			wireframeLinewidth: 3
-		});
 
-		var plane = THREE.SceneUtils.createMultiMaterialObject(planeGeometry, [
-			planePhongMaterial,
-			planeWireframeMaterial
-		]);
-
+		var plane = new THREE.Mesh(planeGeometry, planePhongMaterial);
 		plane.rotation.x = -Math.PI/2;
 
 		scene.add(plane);
@@ -204,6 +182,16 @@
 
 			// renderer.render(scene,camera);
 			// renderer.render(bgScene,bgCamera);
+			var offset, 
+				positions = plane.geometry.vertices;
+			for(var i = 0; i < positions.length; i++){
+				offset = noise.simplex3(positions[i].x/20 , positions[i].y /20, clock.getElapsedTime()/10) * 15;
+				positions[i].z = offset;
+			}
+
+			planeGeometry.computeFaceNormals();
+			planeGeometry.normalsNeedUpdate = true;
+			planeGeometry.verticesNeedUpdate = true;
 
 			//composite rendering
 			renderer.autoClear = false;

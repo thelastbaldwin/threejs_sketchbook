@@ -12,6 +12,8 @@
 	<script src="js/third_party/dat.gui.min.js"></script>
 	<script src="js/third_party/OrbitControls.js"></script>
 	<script src="js/third_party/perlin.js"></script>
+	<script src="http://connect.soundcloud.com/sdk.js"></script>
+	<script src="js/sound/noiseTerrain.js"></script>
 	<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -28,6 +30,7 @@
 			this.angle = Math.PI/3;
 			this.exponent = 10.0;
 		};
+
 		gui.add(spotlightOptions, 'z', 100, 500);
 		gui.add(spotlightOptions, 'height', -250, 250);
 		gui.add(spotlightOptions, 'intensity', 0.0, 1.0);
@@ -38,6 +41,9 @@
 		var bgScene = new THREE.Scene();
 		var bgCamera = new THREE.OrthographicCamera( -window.innerWidth, window.innerWidth, window.innerHeight, -window.innerHeight, 1, 1000 );
 		bgCamera.position.z = 100;
+
+		var starTexture = THREE.ImageUtils.loadTexture('img/stars.png');
+
 		var bgMaterial = new THREE.ShaderMaterial({
  				uniforms: {
  					mousePoint: {
@@ -46,7 +52,7 @@
  					},
  					starsTexture: {
  						type: 't',
- 						value: THREE.ImageUtils.loadTexture( 'img/stars.png')
+ 						value: starTexture
  					}
  				},
  				depthTest: false,
@@ -202,6 +208,6 @@
 		}
 
 		renderScene();
-
 	</script>
+	<audio id="myTrack"></audio>
 </body>

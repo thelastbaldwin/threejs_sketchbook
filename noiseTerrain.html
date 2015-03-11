@@ -23,19 +23,10 @@
 		//use perlin noise to mess with a mesh
 		var gui = new dat.GUI();
 		var spotlightOptions = new function(){
-			this.z = 500;
 			this.height = 250;
-			this.intensity = 1.0;
-			this.distance = 0;
-			this.angle = Math.PI/3;
-			this.exponent = 10.0;
 		};
 
-		gui.add(spotlightOptions, 'z', 100, 500);
 		gui.add(spotlightOptions, 'height', -250, 250);
-		gui.add(spotlightOptions, 'intensity', 0.0, 1.0);
-		gui.add(spotlightOptions, 'distance', 0, 1000);
-		gui.add(spotlightOptions, 'angle', Math.PI/3, Math.PI/2);
 
 		//background stuff
 		var bgScene = new THREE.Scene();

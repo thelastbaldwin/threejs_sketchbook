@@ -1,7 +1,9 @@
 var client_id = '94fbf1dd918af5f7791d75d623fb4448',
 	context,
-	trackBuffer, 
-	source;
+	// audioBuffer, 
+	sourceNode,
+	analyser,
+	javascriptNode;
 
 window.addEventListener('load', init, false);
 
@@ -10,7 +12,17 @@ function init() {
 		// Fix up for prefixing
 		window.AudioContext = window.AudioContext||window.webkitAudioContext;
 		context = new AudioContext();
-		source = context.createBufferSource();
+		sourceNode = context.createBufferSource();
+		//appears to be the default?
+		sourceNode.connect(context.destination);
+
+		//analyser
+		analyser = context.createAnalyser();
+		// We use a smoothingTimeConstant to make the meter less jittery
+		analyser.smoothingTimeConstant = 0.3;
+		analyser.fftSize = 1024;
+
+		javascriptNode = context.createScriptProcessor(2048, 1, 1);
 
 		SC.initialize({
 			client_id: client_id
@@ -39,12 +51,11 @@ function init() {
 
 				xhr.onload = function(){
 					context.decodeAudioData(xhr.response, function(buffer){
-						// trackBuffer = buffer;
+						// audioBuffer = buffer;
 						//is trackBuffer even necessary anymore?
-						source.buffer = buffer;
-						// source.buffer = trackBuffer;
-						source.connect(context.destination);
-						source.start(0);
+						sourceNode.buffer = buffer;
+						sourceNode.connect(context.destination);
+						sourceNode.start(0);
 					});
 				};
 				xhr.send();

@@ -24,26 +24,41 @@
 		var gui = new dat.GUI();
 		var spotlightOptions = new function(){
 			this.height = 250;
+			this.gain = 0;
+			this.currentTrack = 0.0;
+			this.play = function(){
+				if(playListLoaded){
+					playSound(BUFFERS[this.currentTrack], 0);
+				}
+			};
+			this.stop = function(){
+				if(playListLoaded){
+					pause();
+				}
+			}
 		};
 
 		gui.add(spotlightOptions, 'height', -250, 250);
+		var gainController = gui.add(spotlightOptions, 'gain', -1.0, 1.0);
+		gui.add(spotlightOptions, 'currentTrack').min(0).max(6).step(1);
+		gui.add(spotlightOptions, 'play');
+		gui.add(spotlightOptions, 'stop');
+
+		gainController.onChange(function(value){
+			console.log('gain changed');
+			gainNode.gain.value = value;
+		});
 
 		//background stuff
 		var bgScene = new THREE.Scene();
 		var bgCamera = new THREE.OrthographicCamera( -window.innerWidth, window.innerWidth, window.innerHeight, -window.innerHeight, 1, 1000 );
 		bgCamera.position.z = 100;
 
-		var starTexture = THREE.ImageUtils.loadTexture('img/stars.png');
-
 		var bgMaterial = new THREE.ShaderMaterial({
  				uniforms: {
  					mousePoint: {
  						type: 'f',
  						value: window.innerHeight/2.0
- 					},
- 					starsTexture: {
- 						type: 't',
- 						value: starTexture
  					}
  				},
  				depthTest: false,
@@ -58,10 +73,9 @@
 				].join('\n'),
  				fragmentShader: [
  					'uniform float mousePoint;',
- 					'uniform sampler2D starsTexture;',
  					'varying vec2 vUv;',
 					'void main() {',
-						'vec3 backgroundColor = texture2D(starsTexture, vUv).rgb;',
+						'vec3 backgroundColor = vec3(0.0, 0.0, 0.0);',
 						'gl_FragColor = vec4(mix(vec3(0.45, 0.78, 1.0), backgroundColor, clamp(gl_FragCoord.y/mousePoint, 0.0, 1.0)), 1.0);',
 					'}'
 				].join('\n')
@@ -125,8 +139,8 @@
 		var sphereMesh  = new THREE.SphereGeometry(10, 16, 16);
 		var spotLightParent = new THREE.Object3D();
 		var pointLights = [
-			new THREE.PointLight(0xa30000, 0.5),
-			new THREE.PointLight(0x00a300, 0.5),
+			new THREE.PointLight(0xff0000, 0.5),
+			new THREE.PointLight(0x00ff00, 0.75),
 			new THREE.PointLight(0x0000a3, 0.5)
 		];
 		var pointLightHelpers = [
@@ -165,6 +179,7 @@
 			// orbitControls.update(clock.getDelta());
 			// spotLightHelper.update();
 			spotLightParent.rotation.y += 0.01;
+			spotLightParent.scale.set(volume/100, 1.0, volume/100);
 
 			sunsphere.position.y = spotlightOptions.height;
 			sunsphere.rotation.y += 0.01;

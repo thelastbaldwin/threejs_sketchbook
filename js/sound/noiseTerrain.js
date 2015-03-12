@@ -1,74 +1,93 @@
 var client_id = '94fbf1dd918af5f7791d75d623fb4448',
 	context,
-	// audioBuffer, 
+	BUFFERS = [],
+	currentTrack = 0,
 	sourceNode,
 	analyser,
-	javascriptNode;
+	javascriptNode,
+	gainNode,
+	playListLoaded = false,
+	volume = 0;
 
 window.addEventListener('load', init, false);
 
 function init() {
 	try {
 		// Fix up for prefixing
-		window.AudioContext = window.AudioContext||window.webkitAudioContext;
+		window.AudioContext = window.AudioContext || window.webkitAudioContext;
 		context = new AudioContext();
-		sourceNode = context.createBufferSource();
-		//appears to be the default?
-		sourceNode.connect(context.destination);
+		gainNode = context.createGain();
 
 		//analyser
 		analyser = context.createAnalyser();
 		// We use a smoothingTimeConstant to make the meter less jittery
 		analyser.smoothingTimeConstant = 0.3;
+		// The fftSize determine how many buckets we get containing frequency information.
 		analyser.fftSize = 1024;
 
 		javascriptNode = context.createScriptProcessor(2048, 1, 1);
+		javascriptNode.onaudioprocess = function(){
+				var array = new Uint8Array(analyser.frequencyBinCount);
+				analyser.getByteFrequencyData(array);
+
+				var sum = Array.prototype.reduce.call(array, function(prev, current){
+					return prev + current;
+				});
+				var average = (array.length > 0 ) ? sum/array.length: 0;
+				volume = average;
+		};
+
+		javascriptNode.connect(context.destination);
+		gainNode.connect(context.destination);
+		analyser.connect(javascriptNode);
 
 		SC.initialize({
 			client_id: client_id
 		});
 
-		SC.get('/users/infinityshred', function(info) {
-			console.log('info', info);
-		});
-
 		SC.get('/users/infinityshred/playlists/6281929', function(info) {
-			console.log(info);
-			info.tracks.forEach(function(track){
-				console.log(track);
-			});
-
-			//initializes some shitty flash player
-			// SC.stream(info.tracks[0].stream_url, {useHTML5Audio: true}, function(sound){
-			//	console.log(sound);
-			//	sound.play();
-			// });
-
-			SC.get('/tracks/' + info.tracks[1].id, function(sound){
+			var loadedTracks = 0;
+			// console.log(info);
+			info.tracks.forEach(function(track, index){
 				var xhr = new XMLHttpRequest();
-				xhr.open('GET', sound.stream_url + '?client_id=' + client_id, true);
+				xhr.open('GET', track.stream_url + '?client_id=' + client_id, true);
 				xhr.responseType = 'arraybuffer';
-
 				xhr.onload = function(){
+					// console.log('track ' + index + ' loaded');
 					context.decodeAudioData(xhr.response, function(buffer){
-						// audioBuffer = buffer;
-						//is trackBuffer even necessary anymore?
-						sourceNode.buffer = buffer;
-						sourceNode.connect(context.destination);
-						sourceNode.start(0);
+						BUFFERS[index] = buffer;
 					});
+					loadedTracks++;
+					if(loadedTracks === info.tracks.length){
+						console.log('playlist loaded');
+						playListLoaded = true;
+					}
 				};
 				xhr.send();
-				// context.decodeAudioData(sound, function(buffer){
-				// trackBuffer = buffer;
-				// });
-				// track.src = sound.stream_url + '?client_id=' + client_id;
-				// track.play();
-				console.log(sound);
 			});
 		});
 	}
 	catch(e) {
 		console.log('Web Audio API is not supported in this browser');
 	}
+}
+
+function playSound(buffer, time){
+	if(sourceNode){
+		//this prevents playing multiple tracks at once
+		sourceNode.stop();
+	}
+	sourceNode = context.createBufferSource();
+
+	sourceNode.connect(analyser);
+	sourceNode.connect(gainNode);
+	sourceNode.connect(context.destination);
+
+	sourceNode.buffer = buffer;
+	sourceNode.connect(context.destination);
+	sourceNode.start(0);
+}
+
+function pause(){
+	sourceNode.stop();
 }

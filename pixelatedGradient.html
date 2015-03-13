@@ -8,6 +8,7 @@
 	<script src="js/third_party/MaskPass.js"></script>
 	<script src="js/third_party/RenderPass.js"></script>
 	<script src="js/shaders/PixelShader.js"></script>
+	<script src="js/shaders/RadialGradientShader.js"></script>
 	<script src="js/third_party/StaticShader.js"></script>
 	<script src="js/third_party/EffectComposer.js"></script>
 	<script src="js/third_party/jquery-2.1.1.min.js"></script>
@@ -30,32 +31,6 @@
 			gui.add(controls, 'staticAmount', 0, 1.0);
 			var innerColorController = gui.addColor(controls, 'innerColor');
 			var outerColorController = gui.addColor(controls, 'outerColor');
-			function setVertexColors(geometry, color1, color2){
-				// first, assign colors to vertices as desired
-				for(var i = 0; i < circleGeometry.vertices.length; i++ ){
-					if(i === 0){
-						circleGeometry.colors[i] = color1
-					}else{
-						circleGeometry.colors[i] = color2;
-					}
-				}
-
-				// faces are indexed using characters
-				var faceIndices = [ 'a', 'b', 'c', 'd' ];
-				var face, numberOfSides, vertexIndex;
-				// copy the colors to corresponding positions 
-				// in each face's vertexColors array.
-				for ( i = 0; i < circleGeometry.faces.length; i++ ) 
-				{
-					face = circleGeometry.faces[ i ];
-					numberOfSides = ( face instanceof THREE.Face3 ) ? 3 : 4;
-					for( var j = 0; j < numberOfSides; j++ ) 
-					{
-						vertexIndex = face[ faceIndices[ j ] ];
-						face.vertexColors[ j ] = circleGeometry.colors[ vertexIndex ];
-					}
-				}
-			}
 
 			var clock = new THREE.Clock();
 			var scene = new THREE.Scene();
@@ -71,24 +46,16 @@
 			var renderer = new THREE.WebGLRenderer();
 			renderer.setSize(window.innerWidth, window.innerHeight);
 
-			var vertexColorMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
-								// radius, segments, thetaStart, thetaLength
-			var circleGeometry = new THREE.CircleGeometry(Math.sqrt(Math.pow(window.innerWidth, 2) + Math.pow(window.innerHeight, 2)), 100);
-			setVertexColors(circleGeometry, new THREE.Color(controls.innerColor), new THREE.Color(controls.outerColor));
-
-			var circle = new THREE.Mesh(circleGeometry, vertexColorMaterial);
-			circle.geometry.colorsNeedUpdate = true;
-			scene.add(circle);
-
-			
 			//effect composer stuff
 			var renderPass = new THREE.RenderPass(scene, camera);
 			var effectCopy = new THREE.ShaderPass(THREE.CopyShader);		
 			effectCopy.renderToScreen = true;
+			var radialGradientShaderPass = new THREE.ShaderPass(THREE.RadialGradientShader);
 			var pixelShaderPass = new THREE.ShaderPass(THREE.PixelShader);
 			var staticShaderPass = new THREE.ShaderPass(THREE.StaticShader);	
 			var composer = new THREE.EffectComposer(renderer);
 			composer.addPass(renderPass);
+			composer.addPass(radialGradientShaderPass);
 			composer.addPass(staticShaderPass);
 			composer.addPass(pixelShaderPass);
 			composer.addPass(effectCopy);
@@ -108,18 +75,19 @@
 			}
 
 			function updateColors(){
-				circle.geometry.colorsNeedUpdate = true;
-				setVertexColors(circleGeometry, new THREE.Color(controls.innerColor), new THREE.Color(controls.outerColor));
+				var newOuter = new THREE.Color(controls.outerColor);
+				var newInner = new THREE.Color(controls.innerColor);
+				radialGradientShaderPass.uniforms.outerColor.value = new THREE.Vector3(newOuter.r, newOuter.g, newOuter.b);
+				radialGradientShaderPass.uniforms.innerColor.value = new THREE.Vector3(newInner.r, newInner.g, newInner.b);
 			}
 
 			innerColorController.onChange(updateColors);
 			outerColorController.onChange(updateColors);
 
 			$(document).on('mousemove', function(event){
-				var y = window.innerHeight/2 - event.originalEvent.y;
-				var x = event.originalEvent.x - window.innerWidth/2;
-				circle.position.x = x;
-				circle.position.y = y;
+				var y = window.innerHeight - event.clientY;
+				var x = event.clientX;
+				radialGradientShaderPass.uniforms.xy.value = new THREE.Vector2(x, y);
 			});
 		});
 	</script>

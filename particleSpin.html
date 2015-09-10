@@ -129,7 +129,7 @@
 				particleSystem = new THREE.PointCloud( geometry, starMaterial );
 				scene.add( particleSystem );
 
-				fg = new THREE.Mesh(new THREE.PlaneBufferGeometry(1000, 1000, 1, 1), new THREE.MeshBasicMaterial({transparent:true, opacity:.02, color: 0x000000}));
+				fg = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000, 1, 1), new THREE.MeshBasicMaterial({transparent:true, opacity:.02, color: 0x000000}));
 				fg.position.z = camera.position.z - 5;
 				parent.add(fg);
 				scene.add(parent);
@@ -137,7 +137,7 @@
 				renderer = new THREE.WebGLRenderer( { antialias: true, preserveDrawingBuffer: true} );
 				renderer.autoClearColor = false;
 				renderer.setClearColor( scene.fog.color, 1 );
-				renderer.setPixelRatio( window.devicePixelRatio );
+				// renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 
 				outputElement.appendChild( renderer.domElement );

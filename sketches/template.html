@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Template</title>
+	<script src="../node_modules/three/build/three.min.js"></script>
+	<script src="../node_modules/stats-js/build/stats.min.js"></script>
+	<script src="../node_modules/dat.gui/build/dat.gui.min.js"></script>
+	<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+	<div id="Stats-output"></div>
+	<div id="WebGL-output"></div>
+	<script>
+		const EXAMPLE = (() => {
+
+			"use strict";
+
+			var scene = new THREE.Scene();
+			var renderer = window.WebGLRenderingContext ? 
+				new THREE.WebGLRenderer(): 
+				new THREE.CanvasRenderer();
+			var light = new THREE.AmbientLight(0xffffff);
+			var camera;
+			var box;
+
+			function onWindowResize(){
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize(window.innerWidth, window.innerHeight);
+			}
+
+			function initScene(){
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+				scene.add(light);
+
+				camera = new THREE.PerspectiveCamera(
+					35, 
+					window.innerWidth/window.innerHeight,
+					1,
+					1000
+				);
+
+				camera.position.z = 100;
+				scene.add(camera);
+
+				box = new THREE.Mesh(
+					new THREE.BoxGeometry(20, 20, 20),
+					new THREE.MeshBasicMaterial({color : 0xFF0000})
+				);
+
+				scene.add(box);
+
+				window.addEventListener( 'resize', onWindowResize, false );
+				render();
+			}
+
+			function render(){
+				box.rotation.y += 0.01;
+				renderer.render(scene, camera);
+				requestAnimationFrame(render);
+			}
+
+			initScene();
+
+			//expose scene for debugging
+			return {
+				scene: scene
+			}
+		})();
+	</script>
+</body>
+</html>

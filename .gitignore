@@ -1,20 +1,5 @@
 #all node dependencies
-#node_modules/
-
-#ignore images
-*.gif
-*.jpg
-*.jpeg
-*.png
-*.tiff
-*.svg
+node_modules/
 
 #OSX
 .DS_Store
-
-#ignore js dependencies
-js/third_party/
-js/fonts/
-
-*.sublime-project
-*.sublime-workspace

@@ -2,12 +2,13 @@
 <html>
 <head>
 	<title>text Geometry</title>
-	<script src="js/third_party/three.min.js"></script>
-	<script src="js/third_party/jquery-2.1.1.min.js"></script>
-	<script src="js/third_party/stats.min.js"></script>
-	<script src="js/third_party/dat.gui.min.js"></script>
-	<script src="js/fonts/helvetiker_font/helvetiker_regular.typeface.js"></script>
-	<link rel="stylesheet" href="css/style.css">
+	<script src="../node_modules/three/build/three.min.js"></script>
+	<script src="../node_modules/jquery/dist/jquery.slim.min.js"></script>
+	<script src="../node_modules/stats-js/build/stats.min.js"></script>
+	<script src="../node_modules/dat.gui/build/dat.gui.min.js"></script>
+	<script src="../node_modules/three/src/FontLoader.js"></script>
+	<script src="../node_modules/three/examples/fonts/helvetiker_regular.typeface.json"></script>
+	<link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 	<div id="Stats-output"></div>
@@ -20,7 +21,7 @@
 			renderer.setSize(WIDTH, HEIGHT),
 			clock = new THREE.Clock();
 
-		var dotTexture = THREE.ImageUtils.loadTexture('img/ZELLA_RunDotReflective_Pattern.jpg');
+		var dotTexture = THREE.ImageUtils.loadTexture('../img/ZELLA_RunDotReflective_Pattern.jpg');
 
 		var spotLightOptions = new function(){
 			this.color = 0xffffff;

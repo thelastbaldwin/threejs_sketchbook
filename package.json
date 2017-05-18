@@ -1,0 +1,28 @@
+{
+  "name": "threejs_sketchbook",
+  "version": "1.0.0",
+  "description": "Simple setup for mucking around in ThreeJS",
+  "main": "index.js",
+  "scripts": {
+    "start": "browser-sync start -f '**/*.html, **/*.js' --serveStatic '.' --server "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thelastbaldwin/threejs_sketchbook.git"
+  },
+  "author": "Steve Minor",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thelastbaldwin/threejs_sketchbook/issues"
+  },
+  "homepage": "https://github.com/thelastbaldwin/threejs_sketchbook#readme",
+  "dependencies": {
+    "dat.gui": "^0.6.1",
+    "jquery": "^3.2.1",
+    "stats-js": "^1.0.0-alpha1",
+    "three": "^0.85.2"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.18.11"
+  }
+}

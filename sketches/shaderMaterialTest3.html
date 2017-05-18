@@ -2,16 +2,14 @@
 <html>
 <head>
 	<title>Wrapping Paper</title>
-	<script src="js/third_party/three.min.js"></script>
-	<script src="js/third_party/jquery-2.1.1.min.js"></script>
-	<script src="js/third_party/stats.min.js"></script>
-	<script src="js/third_party/dat.gui.min.js"></script>
-	<link rel="stylesheet" href="css/style.css">
+	<script src="../node_modules/three/build/three.min.js"></script>
+	<script src="../node_modules/jquery/dist/jquery.slim.min.js"></script>
+	<script src="../node_modules/stats-js/build/stats.min.js"></script>
+	<script src="../node_modules/dat.gui/build/dat.gui.min.js"></script>
+	<link rel="stylesheet" href="../css/style.css">
 	<script id="vertex-shader" type="x-shader/x-vertex">
 		void main() {
-  			gl_Position = projectionMatrix *
-            modelViewMatrix *
-            vec4(position,1.0);
+  			gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
 		}
 
 	</script>
@@ -21,10 +19,9 @@
 		uniform float time, speed, lineWidth;
 
 		void main() {
-			//diagonal bands
 			vec2 position = vec2(gl_FragCoord.x, gl_FragCoord.y);
- 			 position.x += time * speed;
-			float remainder = floor((position.x + position.y)/lineWidth);
+ 			position.y += time * speed;
+			float remainder = floor(position.y/lineWidth);
 
 			if(mod(remainder, 2.0) == 0.0){
 			gl_FragColor = WHITE;
@@ -32,7 +29,6 @@
 			discard;
 			}
 		}
-	
 	</script>
 </head>
 <body>
@@ -51,18 +47,30 @@
 
 		//array, int
 		function generateColorRamp(colors, steps){
+			colors.push(colors[0]);
+
 			var colorIntervals = [],
 			i, j,
 			deltaR,
 			deltaG,
-			deltaB;
+			deltaB,
+			intervalSteps = steps / colors.length,
+			currentColorIndex,
+			nextColorIndex;
 
-			for(i = 0; i < colors.length -1; i++){
-				deltaR = (colors[i+1][0] - colors[i][0]) / steps;
-				deltaG = (colors[i+1][1] - colors[i][1]) / steps;
-				deltaB = (colors[i+1][2] - colors[i][2]) / steps;
+			for(i = 0; i < colors.length; i++){	
+				if(i === colors.length - 1){
+					currentColorIndex = i - 1;
+					nextColorIndex = 0;
+				}else{
+					currentColorIndex = i;
+					nextColorIndex = i + 1;
+				}
+				deltaR = (colors[nextColorIndex][0] - colors[currentColorIndex][0]) / intervalSteps;
+				deltaG = (colors[nextColorIndex][1] - colors[currentColorIndex][1]) / intervalSteps;
+				deltaB = (colors[nextColorIndex][2] - colors[currentColorIndex][2]) / intervalSteps;
 
-				for(j = 0; j < steps; j++){
+				for(j = 0; j < intervalSteps; j++){
 					var newColor = [
 						Math.abs(parseInt(colors[i][0] + deltaR * j, 10)),
 						Math.abs(parseInt(colors[i][1] + deltaG * j, 10)),
@@ -70,8 +78,6 @@
 					];
 
 					colorIntervals.push(newColor);
-
-					console.log(newColor[0], newColor[1], newColor[2]);
 				}
 			}
 
@@ -82,10 +88,11 @@
 			GOLD = [255,215,0],
 			SILVER = [192, 192, 192],
 			//total steps in ramp from red -> gold -> silver -> red
-			STEPS = 200,
-			//hex color values
-			colorIntervals = generateColorRamp([RED, GOLD, SILVER, RED], STEPS);
+			STEPS = 800,
+			
+			colorIntervals = generateColorRamp([RED, GOLD, SILVER], STEPS);
 
+			//hex color values
 			colorIntervals.forEach(function(colorValue, index, array){
 				colorIntervals[index] = rgbToHex(colorValue[0], colorValue[1], colorValue[2]);
 			});
@@ -100,16 +107,18 @@
 			}
 		}());
 
+		// GUI
 		var controls = new function(){
-			this.lineWidth = 500,
+			this.lineWidth = 50,
 			this.speed = 0.20,
 			this.colorCyclingSpeed = 0.05
 		};
 
 		var gui = new dat.GUI();
-		gui.add(controls, 'lineWidth', 100, 500);
+		gui.add(controls, 'lineWidth', 50, 500);
 		gui.add(controls, 'speed', 0.2, 10);
 		gui.add(controls, 'colorCyclingSpeed', 0.05, 1.0);
+		// END GUI
 
 		function initStats(){
 			var stats = new Stats();
@@ -119,19 +128,41 @@
 			stats.domElement.style.top = '0px';
 			$('#Stats-output').append(stats.domElement);
 			return stats;
-		}
+		};
+
+		function getMousePosition(event){
+			return {
+				x: -window.innerWidth/2 + event.x,
+				y: window.innerHeight/2 - event.y
+			};
+		};
 
 		var rows = 8,
 			columns = 8,
-			planeWidth = window.innerWidth / rows,
-			planeHeight = window.innerHeight / columns,
-			padding = planeHeight * 0.25,
-			planes = [];
+			planeWidth = window.innerWidth / 2,
+			planeHeight = window.innerHeight / 2,
+			planes = [],
+			triangles = [];
+
+		//call this function in the console to output the current composition
+		triangles.print = function(){
+			console.log(JSON.stringify(this.map(function(value, index, arr){
+				return {
+					'position' : value.position,
+					'rotation' : value.rotation
+				}
+			})));
+		};
 
 		$(function(){
 			var stats = initStats();
+			var scene = new THREE.Scene();
+			var mousePos = {
+				x: 0,
+				y: 0
+			};
 
-			//frame buffer object
+			// frame buffer object
 			var fboScene = new THREE.Scene();
 			var fboTexture = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat } );
 			var quadGeometry = new THREE.PlaneGeometry( window.innerWidth, window.innerHeight, 1, 1 );
@@ -157,16 +188,60 @@
 			fboScene.add(quad);
 
 			var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 1, 1000 );
-
 			fboScene.add(camera);
 
 			camera.position.x = 0;
 			camera.position.y =	0;
 			camera.position.z = 100;
-			camera.lookAt(fboScene.position);
+			camera.lookAt(scene.position);
 
 			var renderer = new THREE.WebGLRenderer();
 			renderer.setSize(window.innerWidth, window.innerHeight);
+
+			var geometry = new THREE.Geometry();
+			geometry.vertices.push(new THREE.Vector3(0.0, 0.0, 0.0));
+			geometry.vertices.push(new THREE.Vector3(window.innerWidth/2, window.innerHeight/2, 0.0));
+			geometry.vertices.push(new THREE.Vector3(0.0, window.innerHeight/2, 0.0));
+			geometry.faces.push(new THREE.Face3(0, 1, 2));
+
+			var triangleMaterial = new THREE.MeshBasicMaterial({
+				map: fboTexture
+			});
+
+			geometry.faceVertexUvs[0][0] = [
+				new THREE.Vector2(0, 0),
+				new THREE.Vector2(0, 1),
+				new THREE.Vector2(1, 1)
+			];
+
+
+			var origin = new THREE.Vector3(0, 0, 0);
+			var triangle;
+			// for(var i = 0; i < 36; i++){
+				triangle = new THREE.Mesh(geometry, triangleMaterial);
+				// triangle.applyMatrix(new THREE.Matrix4().makeRotationZ(Math.PI * 3/12));
+				scene.add(triangle);
+			// }
+
+			$(document).on("mousemove", function(event){
+				mousePos = getMousePosition(event.originalEvent);
+			});
+
+			$(document).on("click", function(event){
+				var newTriangle = triangle.clone();
+				triangles.push(newTriangle);
+				scene.add(newTriangle);
+			});
+
+			$(document).on("keyup", function(event){
+				if(event.keyCode == 82){
+					if(event.shiftKey){
+						triangle.rotation.z -= Math.PI/32;
+					}else{
+						triangle.rotation.z += Math.PI/32;
+					}
+				}
+			});
 
 		
 			$('#WebGL-output').append(renderer.domElement);
@@ -177,13 +252,16 @@
 				var time = millis();
 				requestAnimationFrame(renderScene);
 
-				renderer.setClearColor(colorIntervals[parseInt(time * controls.colorCyclingSpeed) % 800]);
+				renderer.setClearColor(colorIntervals[parseInt(time * controls.colorCyclingSpeed) % STEPS]);
 
 				quadMaterial.uniforms.time.value = time;
 				quadMaterial.uniforms.speed.value = controls.speed;
 				quadMaterial.uniforms.lineWidth.value = controls.lineWidth;
+
+				triangle.position.set(mousePos.x, mousePos.y, 0);
 				
-				renderer.render(fboScene, camera);
+				renderer.render(fboScene, camera, fboTexture, true);
+				renderer.render(scene, camera);
 			}
 		});
 	</script>

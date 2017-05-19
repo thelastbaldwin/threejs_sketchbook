@@ -3,7 +3,6 @@
 <head>
 	<title>Sprite Texture</title>
 	<script src="../../node_modules/three/build/three.min.js"></script>
-	<script src="../../node_modules/jquery/dist/jquery.slim.min.js"></script>
 	<script src="../../node_modules/stats-js/build/stats.min.js"></script>
 	<script src="../../node_modules/dat.gui/build/dat.gui.min.js"></script>
 	<link rel="stylesheet" href="../../css/style.css">
@@ -60,11 +59,11 @@
 			stats.domElement.style.position = 'absolute',
 			stats.domElement.style.left = '0px';
 			stats.domElement.style.top = '0px';
-			$('#Stats-output').append(stats.domElement);
+			document.getElementById('Stats-output').appendChild(stats.domElement);
 			return stats;
 		}
 
-		$(function(){
+		document.addEventListener("DOMContentLoaded", function(){
 			var clock = new THREE.Clock();
 			var stats = initStats();
 			var scene = new THREE.Scene();
@@ -176,7 +175,7 @@
 			}		
 
 
-			$('#WebGL-output').append(renderer.domElement);
+			document.getElementById('WebGL-output').appendChild(renderer.domElement);
 			renderScene();
 
 			function renderScene(){
@@ -199,7 +198,6 @@
 				// 	}
 				// }
 				renderer.render(scene, camera);
-
 			}
 		});
 	</script>

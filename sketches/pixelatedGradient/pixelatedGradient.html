@@ -3,6 +3,7 @@
 <head>
 	<title>Pixelated Gradient</title>
 	<script src="../../node_modules/three/build/three.min.js"></script>
+	<script src="../../node_modules/three/examples/js/postprocessing/EffectComposer.js"></script>
 	<script src="../../node_modules/three/examples/js/shaders/CopyShader.js"></script>
 	<script src="../../node_modules/three/examples/js/postprocessing/ShaderPass.js"></script>
 	<script src="../../node_modules/three/examples/js/postprocessing/MaskPass.js"></script>
@@ -10,15 +11,13 @@
 	<script src="../../js/shaders/PixelShader.js"></script>
 	<script src="../../js/shaders/RadialGradientShader.js"></script>
 	<script src="../../node_modules/three/examples/js/shaders/StaticShader.js"></script>
-	<script src="../../node_modules/three/examples/js/postprocessing/EffectComposer.js"></script>
-	<script src="../../node_modules/jquery/dist/jquery.slim.min.js"></script>
 	<script src="../../node_modules/dat.gui/build/dat.gui.min.js"></script>
 	<link rel="stylesheet" href="../../css/style.css">
 </head>
 <body>
 	<div id="WebGL-output"></div>
 	<script>
-		$(function(){
+		document.addEventListener("DOMContentLoaded", function(){
 			var controls = new function(){
 				this.innerColor = 0xffffff;
 				this.outerColor = 0x000000;
@@ -60,7 +59,7 @@
 			composer.addPass(pixelShaderPass);
 			composer.addPass(effectCopy);
 		
-			$('#WebGL-output').append(renderer.domElement);
+			document.getElementById('WebGL-output').appendChild(renderer.domElement);
 			renderScene();
 
 			function renderScene(){

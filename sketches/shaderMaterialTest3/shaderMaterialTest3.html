@@ -3,7 +3,6 @@
 <head>
 	<title>Wrapping Paper</title>
 	<script src="../../node_modules/three/build/three.min.js"></script>
-	<script src="../../node_modules/jquery/dist/jquery.slim.min.js"></script>
 	<script src="../../node_modules/stats-js/build/stats.min.js"></script>
 	<script src="../../node_modules/dat.gui/build/dat.gui.min.js"></script>
 	<link rel="stylesheet" href="../../css/style.css">
@@ -37,6 +36,7 @@
 	<script>
 		//generate color ramp
 		function componentToHex(c) {
+			console.log(c)
 		    var hex = c.toString(16);
 		    return hex.length == 1 ? "0" + hex : hex;
 		}
@@ -88,14 +88,14 @@
 			GOLD = [255,215,0],
 			SILVER = [192, 192, 192],
 			//total steps in ramp from red -> gold -> silver -> red
-			STEPS = 800,
+			STEPS = 250,
 			
 			colorIntervals = generateColorRamp([RED, GOLD, SILVER], STEPS);
 
 			//hex color values
-			colorIntervals.forEach(function(colorValue, index, array){
-				colorIntervals[index] = rgbToHex(colorValue[0], colorValue[1], colorValue[2]);
-			});
+			// colorIntervals.forEach(function(colorValue, index, array){
+			// 	colorIntervals[index] = rgbToHex(colorValue[0], colorValue[1], colorValue[2]);
+			// });
 
 		//end color generation
 
@@ -126,14 +126,14 @@
 			stats.domElement.style.position = 'absolute',
 			stats.domElement.style.left = '0px';
 			stats.domElement.style.top = '0px';
-			$('#Stats-output').append(stats.domElement);
+			document.getElementById('Stats-output').appendChild(stats.domElement);
 			return stats;
 		};
 
 		function getMousePosition(event){
 			return {
-				x: -window.innerWidth/2 + event.x,
-				y: window.innerHeight/2 - event.y
+				x: -window.innerWidth/2 + event.clientX,
+				y: window.innerHeight/2 - event.clientY
 			};
 		};
 
@@ -154,7 +154,7 @@
 			})));
 		};
 
-		$(function(){
+		window.addEventListener("DOMContentLoaded", function(){
 			var stats = initStats();
 			var scene = new THREE.Scene();
 			var mousePos = {
@@ -181,8 +181,8 @@
 						value: controls.lineWidth
 					}
 				},
-				vertexShader: $('#vertex-shader').text(),
-				fragmentShader: $('#fragment-shader').text()
+				vertexShader: document.getElementById('vertex-shader').innerText,
+				fragmentShader: document.getElementById('fragment-shader').innerText
 			});
 			var quad = new THREE.Mesh(quadGeometry, quadMaterial);
 			fboScene.add(quad);
@@ -205,7 +205,7 @@
 			geometry.faces.push(new THREE.Face3(0, 1, 2));
 
 			var triangleMaterial = new THREE.MeshBasicMaterial({
-				map: fboTexture
+				map: fboTexture.texture
 			});
 
 			geometry.faceVertexUvs[0][0] = [
@@ -223,17 +223,17 @@
 				scene.add(triangle);
 			// }
 
-			$(document).on("mousemove", function(event){
-				mousePos = getMousePosition(event.originalEvent);
+			document.addEventListener("mousemove", function(event){
+				mousePos = getMousePosition(event);
 			});
 
-			$(document).on("click", function(event){
+			document.addEventListener("click", function(event){
 				var newTriangle = triangle.clone();
 				triangles.push(newTriangle);
 				scene.add(newTriangle);
 			});
 
-			$(document).on("keyup", function(event){
+			document.addEventListener("keyup", function(event){
 				if(event.keyCode == 82){
 					if(event.shiftKey){
 						triangle.rotation.z -= Math.PI/32;
@@ -244,7 +244,7 @@
 			});
 
 		
-			$('#WebGL-output').append(renderer.domElement);
+			document.getElementById('WebGL-output').appendChild(renderer.domElement);
 			renderScene();
 
 			function renderScene(){
@@ -252,7 +252,10 @@
 				var time = millis();
 				requestAnimationFrame(renderScene);
 
-				renderer.setClearColor(colorIntervals[parseInt(time * controls.colorCyclingSpeed) % STEPS]);
+				// array of rgb values
+				var currentColor = colorIntervals[parseInt(time * controls.colorCyclingSpeed) % STEPS];
+
+				renderer.setClearColor(`rgb(${currentColor[0]},${currentColor[1]},${currentColor[2]})`);
 
 				quadMaterial.uniforms.time.value = time;
 				quadMaterial.uniforms.speed.value = controls.speed;

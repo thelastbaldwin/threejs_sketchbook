@@ -2,11 +2,11 @@
 <html>
 <head>
 	<title>wide text</title>
-	<script src="../node_modules/three/build/three.min.js"></script>
-	<script src="../js/third_party/jquery-2.1.1.min.js"></script>
-	<script src="../js/fonts/interstate_regular.typeface.js"></script>
-	<script src="../js/fonts/franklin_gothic_book_regular.typeface.js"></script>
-	<link rel="stylesheet" href="../css/style.css">
+	<script src="../../node_modules/three/build/three.min.js"></script>
+	<script src="../../js/third_party/jquery-2.1.1.min.js"></script>
+	<script src="../../js/fonts/interstate_regular.typeface.js"></script>
+	<script src="../../js/fonts/franklin_gothic_book_regular.typeface.js"></script>
+	<link rel="stylesheet" href="../../css/style.css">
 </head>
 <body>
 	<div id="Stats-output"></div>
@@ -73,7 +73,7 @@
 			parent.add(spotlight);
 
 			var planeSize = 2560, planeGeometry, planeMaterial, plane;
-			var planeTexture = THREE.ImageUtils.loadTexture('../img/zella_pattern_256_grayscale.jpg', undefined, function(){
+			var planeTexture = THREE.ImageUtils.loadTexture('../../img/zella_pattern_256_grayscale.jpg', undefined, function(){
 				planeTexture.wrapT = planeTexture.wrapS = THREE.RepeatWrapping;
 				planeTexture.repeat.set(10, 10);
 				planeTexture.offset.y = 0.1;

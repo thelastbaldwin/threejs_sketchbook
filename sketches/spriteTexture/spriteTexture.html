@@ -2,11 +2,11 @@
 <html>
 <head>
 	<title>Sprite Texture</title>
-	<script src="../node_modules/three/build/three.min.js"></script>
-	<script src="../node_modules/jquery/dist/jquery.slim.min.js"></script>
-	<script src="../node_modules/stats-js/build/stats.min.js"></script>
-	<script src="../node_modules/dat.gui/build/dat.gui.min.js"></script>
-	<link rel="stylesheet" href="../css/style.css">
+	<script src="../../node_modules/three/build/three.min.js"></script>
+	<script src="../../node_modules/jquery/dist/jquery.slim.min.js"></script>
+	<script src="../../node_modules/stats-js/build/stats.min.js"></script>
+	<script src="../../node_modules/dat.gui/build/dat.gui.min.js"></script>
+	<link rel="stylesheet" href="../../css/style.css">
 	<script id="vertex-shader" type="x-shader/x-vertex">
 		uniform sampler2D videoTexture;
 		uniform float amplitude;
@@ -86,22 +86,22 @@
 			scene.add(axes);
 
 			// TEXTURES
-			var spinningHampsterTexture = new THREE.ImageUtils.loadTexture('../img/hampsterdance/spinning_hampster_spritesheet.gif')
+			var spinningHampsterTexture = new THREE.ImageUtils.loadTexture('../../img/hampsterdance/spinning_hampster_spritesheet.gif')
 			var spinningHampsterMaterial = new THREE.MeshBasicMaterial({
 				map: spinningHampsterTexture,
 			});
 
-			var chipmunkTexture = new THREE.ImageUtils.loadTexture('../img/hampsterdance/chipmunk_spritesheet.gif')
+			var chipmunkTexture = new THREE.ImageUtils.loadTexture('../../img/hampsterdance/chipmunk_spritesheet.gif')
 			var chipmunkMaterial = new THREE.MeshBasicMaterial({
 				map: chipmunkTexture,
 			});
 
-			var outlinedHampsterTexture = new THREE.ImageUtils.loadTexture('../img/hampsterdance/outlined_hampster_spritesheet.gif')
+			var outlinedHampsterTexture = new THREE.ImageUtils.loadTexture('../../img/hampsterdance/outlined_hampster_spritesheet.gif')
 			var oulinedHampsterMaterial = new THREE.MeshBasicMaterial({
 				map: outlinedHampsterTexture,
 			});
 
-			var hampsterTrioTexture = new THREE.ImageUtils.loadTexture('../img/hampsterdance/three_hampsters_spritesheet.gif')
+			var hampsterTrioTexture = new THREE.ImageUtils.loadTexture('../../img/hampsterdance/three_hampsters_spritesheet.gif')
 			var hapsterTrioMaterial = new THREE.MeshBasicMaterial({
 				map: hampsterTrioTexture,
 			});

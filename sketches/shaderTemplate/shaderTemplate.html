@@ -11,7 +11,7 @@
 	<div id="Stats-output"></div>
 	<div id="WebGL-output"></div>
 	<script>
-		var controls = new function(){
+		var controls = function(){
 		}
 
 		var gui = new dat.GUI();
@@ -35,8 +35,8 @@
 			var quadGeometry = new THREE.PlaneBufferGeometry( window.innerWidth, window.innerHeight, 1, 1 );
 			var quadMaterial = new THREE.ShaderMaterial({
 				uniforms: {
-					time: { 
-						type: 'f', 
+					time: {
+						type: 'f',
 						value: 0
 					}
 				},

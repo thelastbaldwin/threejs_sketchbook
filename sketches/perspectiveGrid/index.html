@@ -4,10 +4,14 @@
 	<title>Perspective Grid</title>
 	<script src="../../node_modules/three/build/three.min.js"></script>
 	<script src="../../node_modules/dat.gui/build/dat.gui.min.js"></script>
-	<link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="./css/style.css">
+    
 </head>
 <body>
-	<div id="Stats-output"></div>
+    <p id="info">
+        Aspect Ratio: <span></span>
+    </p>
+    <a id="download" href="#" download="grid.jpg">Download</a>
     <div id="WebGL-output"></div>
     <script id="vertex-shader" type="x-shader">
         void main() {
@@ -25,6 +29,11 @@
         const float TAU = 2. * PI;
 
         uniform vec2 u_resolution;
+        uniform float u_lvp;
+        uniform float u_rvp;
+        uniform float u_hl;
+        uniform float u_lineCount;
+        uniform float u_lineThickness;
 
         float starBurst(vec2 st, vec2 target, float decay, float numLines){
             //decay should get exponentially closer to 1 as the distance increases
@@ -40,21 +49,18 @@
             //normalized texture coordinate
             vec2 st = gl_FragCoord.xy / u_resolution;
 
-            float hl = 0.500;
-            vec2 rvp = vec2(-1.25, hl);
-            vec2 lvp = vec2(1.75, hl);
-            vec2 cvp = vec2(.5, hl);
+            vec2 rvp = vec2(u_rvp, u_hl);
+            vec2 lvp = vec2(u_lvp, u_hl);
 
-            const float numLines = 160.;
+            color += starBurst(st, rvp, 1.0 - u_lineThickness, u_lineCount);
+            color += starBurst(st, lvp, 1.0 - u_lineThickness, u_lineCount);
 
-            color += starBurst(st, rvp, 0.998, numLines);
-            color += starBurst(st, lvp, 0.998, numLines);
-            // color += starBurst(st, cvp, 0.972, numLines);
-            color += 1.0 - step(0.0025, distance(st.y, hl));
+            color += 1.0 - step(0.0015, distance(st.y, u_hl));
 
-            gl_FragColor = vec4(color, 1.);
+            gl_FragColor = vec4(1.0 - color, 1.);
         }
     </script>
+    <script src="./gui.js"></script>
 	<script src="./perspectiveGrid.js">
 	</script>
 </body>

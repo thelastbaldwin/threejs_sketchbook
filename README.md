@@ -8,4 +8,4 @@ Experiments with threejs
 * npm install
 * npm start
 * navigate to a listed sketch
-* modify in the source for live updates
+* modify source for live updates

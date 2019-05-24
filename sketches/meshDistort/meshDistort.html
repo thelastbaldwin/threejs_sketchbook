@@ -34,7 +34,7 @@
 			vec2 position = vec2(gl_FragCoord.x, gl_FragCoord.y);
 			gl_FragColor = texture2D(videoTexture, vUv);
 			//gl_FragColor = vec4(0, 0, 0, 1.0);
-		}	
+		}
 	</script>
 </head>
 <body class="Mesh-Distort">
@@ -77,7 +77,7 @@
 		$(function(){
 			if(navigator.getUserMedia){
 				navigator.getUserMedia({video: {mandatory: {minWidth: window.innerWidth}}, audio: false}, function(localMediaStream){
-					video.src = window.URL.createObjectURL(localMediaStream);
+					video.srcObject = localMediaStream;
 				}, function(err){
 					console.error('error with getUserMedia:' + err);
 				});
@@ -113,7 +113,7 @@
 			var planeMaterial = new THREE.ShaderMaterial({
 				uniforms:{
 					videoTexture: {
-						type: 't', 
+						type: 't',
 						value: videoTexture
 					},
 					amplitude: {
@@ -122,7 +122,6 @@
 				},
 				vertexShader: $('#vertex-shader').text(),
 				fragmentShader: $('#fragment-shader').text(),
-				map: videoTexture,		
 				wireframe: true,
 				wireframeLinewidth: 1
 			});

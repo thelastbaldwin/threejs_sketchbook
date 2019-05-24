@@ -4,7 +4,7 @@
   "description": "Simple setup for mucking around in ThreeJS",
   "main": "index.js",
   "scripts": {
-    "start": "browser-sync start -f '**/*.html, **/*.js' --serveStatic '.' --server "
+    "start": "browser-sync start -f '**/*.html, **/*.js' --https --serveStatic '.' --server "
   },
   "repository": {
     "type": "git",

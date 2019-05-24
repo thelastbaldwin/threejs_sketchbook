@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Template</title>
-	<script src="../../node_modules/three/build/three.min.js"></script>
+  <title>Template</title>
+  <script src="../../node_modules/three/build/three.min.js"></script>
 	<script src="../../node_modules/stats-js/build/stats.min.js"></script>
 	<script src="../../node_modules/dat.gui/build/dat.gui.min.js"></script>
 	<link rel="stylesheet" href="../../css/style.css">
@@ -16,8 +16,8 @@
 			"use strict";
 
 			var scene = new THREE.Scene();
-			var renderer = window.WebGLRenderingContext ? 
-				new THREE.WebGLRenderer(): 
+			var renderer = window.WebGLRenderingContext ?
+			  new THREE.WebGLRenderer():
 				new THREE.CanvasRenderer();
 			var light = new THREE.AmbientLight(0xffffff);
 			var camera;
@@ -36,7 +36,7 @@
 				scene.add(light);
 
 				camera = new THREE.PerspectiveCamera(
-					35, 
+					35,
 					window.innerWidth/window.innerHeight,
 					1,
 					1000

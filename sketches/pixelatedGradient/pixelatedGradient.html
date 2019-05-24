@@ -9,8 +9,8 @@
 	<script src="../../node_modules/three/examples/js/postprocessing/MaskPass.js"></script>
 	<script src="../../node_modules/three/examples/js/postprocessing/RenderPass.js"></script>
 	<script src="../../js/shaders/PixelShader.js"></script>
+	<script src="../../js/shaders/StaticShader.js"></script>
 	<script src="../../js/shaders/RadialGradientShader.js"></script>
-	<script src="../../node_modules/three/examples/js/shaders/StaticShader.js"></script>
 	<script src="../../node_modules/dat.gui/build/dat.gui.min.js"></script>
 	<link rel="stylesheet" href="../../css/style.css">
 </head>
@@ -47,18 +47,18 @@
 
 			//effect composer stuff
 			var renderPass = new THREE.RenderPass(scene, camera);
-			var effectCopy = new THREE.ShaderPass(THREE.CopyShader);		
+			var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
 			effectCopy.renderToScreen = true;
 			var radialGradientShaderPass = new THREE.ShaderPass(THREE.RadialGradientShader);
 			var pixelShaderPass = new THREE.ShaderPass(THREE.PixelShader);
-			var staticShaderPass = new THREE.ShaderPass(THREE.StaticShader);	
+			var staticShaderPass = new THREE.ShaderPass(THREE.StaticShader);
 			var composer = new THREE.EffectComposer(renderer);
 			composer.addPass(renderPass);
 			composer.addPass(radialGradientShaderPass);
 			composer.addPass(staticShaderPass);
 			composer.addPass(pixelShaderPass);
 			composer.addPass(effectCopy);
-		
+
 			document.getElementById('WebGL-output').appendChild(renderer.domElement);
 			renderScene();
 
@@ -83,7 +83,7 @@
 			innerColorController.onChange(updateColors);
 			outerColorController.onChange(updateColors);
 
-			$(document).on('mousemove', function(event){
+			window.document.addEventListener('mousemove', function(event){
 				var y = window.innerHeight - event.clientY;
 				var x = event.clientX;
 				radialGradientShaderPass.uniforms.xy.value = new THREE.Vector2(x, y);

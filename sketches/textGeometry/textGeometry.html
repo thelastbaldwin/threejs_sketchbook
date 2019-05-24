@@ -5,14 +5,15 @@
 	<script src="../../node_modules/three/build/three.min.js"></script>
 	<script src="../../node_modules/stats-js/build/stats.min.js"></script>
 	<script src="../../node_modules/dat.gui/build/dat.gui.min.js"></script>
-	<script src="../../node_modules/three/src/FontLoader.js"></script>
-	<script src="../../node_modules/three/examples/fonts/helvetiker_regular.typeface.json"></script>
+  <!-- FontLoader is an ES6 module and needs to be transpiled before use -->
+  <!-- <script src="../../node_modules/three/src/loaders/FontLoader.js"></script> -->
 	<link rel="stylesheet" href="../../css/style.css">
 </head>
 <body>
 	<div id="Stats-output"></div>
 	<div id="WebGL-output"></div>
 	<script>
+    const fontLoader = new THREE.FontLoader();
 		var renderer = new THREE.WebGLRenderer(),
 			WIDTH = 1520,
 			HEIGHT = 80;
@@ -20,6 +21,7 @@
 			renderer.setSize(WIDTH, HEIGHT),
 			clock = new THREE.Clock();
 
+    // will have to update texture and loading scheme: https://threejs.org/docs/#api/en/loaders/TextureLoader
 		var dotTexture = THREE.ImageUtils.loadTexture('../../img/ZELLA_RunDotReflective_Pattern.jpg');
 
 		var spotLightOptions = new function(){
@@ -119,29 +121,36 @@
 			camera.lookAt(scene.position);
 
 			var axes = new THREE.AxisHelper(20);
-			scene.add(axes);
+      scene.add(axes);
+      let textGeometry;
+      let shinyTextMaterial;
+      let textMesh;
 
-			var textGeometry = new THREE.TextGeometry('b\'dass', {
-				size: 72,
-				height: 1,
-				curveSegments: 10,
-				font: 'helvetiker',
-				weight: 'normal',
-				style: 'normal',
-				bevelEnabled: true,
-				bevelThickness: 0.5,
-				bevelSize: 2
-			});
+      fontLoader.load("../../node_modules/three/examples/fonts/helvetiker_regular.typeface.json", font => {
+          textGeometry = new THREE.TextGeometry('b\'dass', {
+          size: 72,
+          height: 1,
+          curveSegments: 10,
+          font,
+          weight: 'normal',
+          style: 'normal',
+          bevelEnabled: true,
+          bevelThickness: 0.5,
+          bevelSize: 2
+        });
 
-			var shinyTextMaterial = new THREE.MeshPhongMaterial({
-				color: 0xffffff,
-				ambient: 0xff0000,
-				specular: 0x0000ff,
-				shininess: 30
-			});
+        shinyTextMaterial = new THREE.MeshPhongMaterial({
+          color: 0xffffff,
+          ambient: 0xff0000,
+          specular: 0x0000ff,
+          shininess: 30
+        });
 
-			var textMesh = new THREE.Mesh(textGeometry, shinyTextMaterial);
-			scene.add(textMesh);
+        textMesh = new THREE.Mesh(textGeometry, shinyTextMaterial);
+        scene.add(textMesh);
+
+        renderScene();
+      });
 
 			var backgroundMaterial = new THREE.MeshLambertMaterial({
 				color: 0xff7b00,
@@ -178,7 +187,6 @@
 			scene.add(directionalLight);
 
 			document.getElementById('WebGL-output').appendChild(renderer.domElement);
-			renderScene();
 
 			function renderScene(){
 				requestAnimationFrame(renderScene);

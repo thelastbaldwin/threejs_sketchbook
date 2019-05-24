@@ -76,7 +76,7 @@
 
 		$(function(){
 			if(navigator.getUserMedia){
-				navigator.getUserMedia({video: {mandatory: {minWidth: window.innerWidth}}, audio: false}, function(localMediaStream){
+				navigator.getUserMedia({video: {ideal: {minWidth: window.innerWidth}}, audio: false}, function(localMediaStream){
 					video.srcObject = localMediaStream;
 				}, function(err){
 					console.error('error with getUserMedia:' + err);
@@ -94,7 +94,7 @@
 
 			camera.position.x = 0;
 			camera.position.y =	0;
-			camera.position.z = 500;
+			camera.position.z = 1000;
 			camera.lookAt(scene.position);
 
 			var renderer = new THREE.WebGLRenderer();

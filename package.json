@@ -23,6 +23,6 @@
     "three": "^0.91.0"
   },
   "devDependencies": {
-    "browser-sync": "^2.26.5"
+    "browser-sync": "^2.27.10"
   }
 }
